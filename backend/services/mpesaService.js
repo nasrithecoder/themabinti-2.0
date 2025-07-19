@@ -21,11 +21,10 @@ class MpesaService {
   async getAccessToken() {
     const now = Date.now();
     console.log('Access token generation method triggered!');
-    // TEMP: Disable cache for debugging
-    // if (this._accessToken && this._accessTokenExpiry && now < this._accessTokenExpiry) {
-    //   // Return cached token
-    //   return this._accessToken;
-    // }
+    if (this._accessToken && this._accessTokenExpiry && now < this._accessTokenExpiry) {
+      // Return cached token
+      return this._accessToken;
+    }
     try {
       const auth = Buffer.from(`${this.consumerKey}:${this.consumerSecret}`).toString('base64');
       const response = await axios.get(`${this.baseUrl}/oauth/v1/generate?grant_type=client_credentials`, {

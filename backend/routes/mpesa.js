@@ -83,6 +83,7 @@ router.get('/status/:packageId', async (req, res) => {
 
 // M-Pesa callback URL
 router.post('/callback', async (req, res) => {
+  console.log('[MPESA][CALLBACK] Callback URL hit! Body:', JSON.stringify(req.body, null, 2));
   try {
     const result = await mpesaService.handleCallback(req.body);
     res.json(result);
