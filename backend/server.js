@@ -8,8 +8,10 @@ const serviceViewRoutes = require('./routes/serviceView');
 const contactRouter = require('./routes/contact');
 const blogsRouter = require('./routes/blogs');
 const appointmentsRouter = require('./routes/appointments');
+const adminRoutes = require('./routes/admin');
 const path = require('path');
 const mpesaRoutes = require('./routes/mpesa');
+const db = require('./models/db');
 
 dotenv.config();
 
@@ -31,6 +33,7 @@ app.use('/api/contact', contactRouter);
 app.use('/api/blogs', blogsRouter);
 app.use('/api/appointments', appointmentsRouter);
 app.use('/api/mpesa', mpesaRoutes);
+app.use('/api/admin', adminRoutes);
 
 /**app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../themabinti.com/build', 'index.html')); // Adjust path if needed
@@ -48,7 +51,11 @@ MONGO_URI=`mongodb+srv://ecommerce:${DBPassword}@cluster0.joccydy.mongodb.net/`
 // Connect to MongoDB
 mongoose
   .connect(MONGO_URI)
-  .then(() => console.log('MongoDB connected'))
+  .then(() => {
+    console.log('MongoDB connected');
+    // Initialize MySQL database for payments
+    db.initializeDatabase();
+  })
   .catch((err) => console.error('MongoDB connection error:', err));
 
 // Start server

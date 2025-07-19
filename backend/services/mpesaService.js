@@ -1,5 +1,6 @@
 const axios = require('axios');
 const crypto = require('crypto');
+const db = require('../models/db');
 
 class MpesaService {
   constructor() {
@@ -107,11 +108,10 @@ class MpesaService {
   // Store payment request in database
   async storePaymentRequest(checkoutRequestId, paymentData) {
     try {
-      const db = require('../models/db');
       const query = `
         INSERT INTO mpesa_payments 
-        (checkout_request_id, package_id, amount, phone_number, timestamp, status)
-        VALUES (?, ?, ?, ?, ?, ?)
+        (checkout_request_id, package_id, amount, phone_number, timestamp, status, user_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
       `;
       await db.query(query, [
         checkoutRequestId,
@@ -120,6 +120,7 @@ class MpesaService {
         paymentData.phoneNumber,
         paymentData.timestamp,
         paymentData.status
+        paymentData.userId || null
       ]);
     } catch (error) {
       console.error('Error storing payment request:', error);
@@ -173,7 +174,6 @@ class MpesaService {
   // Update payment status in database
   async updatePaymentStatus(checkoutRequestId, status) {
     try {
-      const db = require('../models/db');
       const query = `
         UPDATE mpesa_payments 
         SET status = ?, updated_at = NOW()
@@ -216,7 +216,6 @@ class MpesaService {
   // Store transaction details
   async storeTransactionDetails(transactionData) {
     try {
-      const db = require('../models/db');
       const query = `
         UPDATE mpesa_payments 
         SET 
@@ -235,6 +234,46 @@ class MpesaService {
     } catch (error) {
       console.error('Error storing transaction details:', error);
       throw new Error('Failed to store transaction details');
+    }
+  }
+
+  // Get payment by checkout request ID
+  async getPaymentByCheckoutId(checkoutRequestId) {
+    try {
+      const query = 'SELECT * FROM mpesa_payments WHERE checkout_request_id = ?';
+      const payments = await db.query(query, [checkoutRequestId]);
+      return payments[0] || null;
+    } catch (error) {
+      console.error('Error getting payment:', error);
+      throw new Error('Failed to get payment details');
+    }
+  }
+
+  // Get all payments with pagination
+  async getAllPayments(page = 1, limit = 20) {
+    try {
+      const offset = (page - 1) * limit;
+      const query = `
+        SELECT * FROM mpesa_payments 
+        ORDER BY created_at DESC 
+        LIMIT ? OFFSET ?
+      `;
+      const countQuery = 'SELECT COUNT(*) as total FROM mpesa_payments';
+      
+      const [payments, countResult] = await Promise.all([
+        db.query(query, [limit, offset]),
+        db.query(countQuery)
+      ]);
+      
+      return {
+        payments,
+        total: countResult[0].total,
+        page,
+        totalPages: Math.ceil(countResult[0].total / limit)
+      };
+    } catch (error) {
+      console.error('Error getting all payments:', error);
+      throw new Error('Failed to get payments');
     }
   }
 }
