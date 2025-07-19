@@ -58,19 +58,19 @@ router.get('/status/:packageId', async (req, res) => {
 
     // Get the checkout request ID from the database
     const db = require('../models/db');
-    const [payment] = await db.query(
-      'SELECT checkout_request_id FROM mpesa_payments WHERE package_id = ? AND timestamp = ? AND status = ?',
+    const payment = await db.query(
+      'SELECT checkout_request_id FROM mpesa_payments WHERE package_id = $1 AND timestamp = $2 AND status = $3',
       [packageId, timestamp, 'pending']
     );
 
-    if (!payment) {
+    if (!payment || payment.length === 0) {
       return res.status(404).json({
         success: false,
         message: 'Payment request not found'
       });
     }
 
-    const result = await mpesaService.checkPaymentStatus(payment.checkout_request_id);
+    const result = await mpesaService.checkPaymentStatus(payment[0].checkout_request_id);
     res.json(result);
   } catch (error) {
     console.error('Status check error:', error);

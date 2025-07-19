@@ -111,7 +111,7 @@ class MpesaService {
       const query = `
         INSERT INTO mpesa_payments 
         (checkout_request_id, package_id, amount, phone_number, timestamp, status, user_id)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
       `;
       await db.query(query, [
         checkoutRequestId,
@@ -119,7 +119,7 @@ class MpesaService {
         paymentData.amount,
         paymentData.phoneNumber,
         paymentData.timestamp,
-        paymentData.status
+        paymentData.status,
         paymentData.userId || null
       ]);
     } catch (error) {
@@ -176,8 +176,8 @@ class MpesaService {
     try {
       const query = `
         UPDATE mpesa_payments 
-        SET status = ?, updated_at = NOW()
-        WHERE checkout_request_id = ?
+        SET status = $1, updated_at = CURRENT_TIMESTAMP
+        WHERE checkout_request_id = $2
       `;
       await db.query(query, [status, checkoutRequestId]);
     } catch (error) {
@@ -219,11 +219,11 @@ class MpesaService {
       const query = `
         UPDATE mpesa_payments 
         SET 
-          mpesa_receipt_number = ?,
-          transaction_date = ?,
-          transaction_amount = ?,
-          updated_at = NOW()
-        WHERE checkout_request_id = ?
+          mpesa_receipt_number = $1,
+          transaction_date = $2,
+          transaction_amount = $3,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE checkout_request_id = $4
       `;
       await db.query(query, [
         transactionData.mpesaReceiptNumber,
@@ -240,7 +240,7 @@ class MpesaService {
   // Get payment by checkout request ID
   async getPaymentByCheckoutId(checkoutRequestId) {
     try {
-      const query = 'SELECT * FROM mpesa_payments WHERE checkout_request_id = ?';
+      const query = 'SELECT * FROM mpesa_payments WHERE checkout_request_id = $1';
       const payments = await db.query(query, [checkoutRequestId]);
       return payments[0] || null;
     } catch (error) {
@@ -256,20 +256,20 @@ class MpesaService {
       const query = `
         SELECT * FROM mpesa_payments 
         ORDER BY created_at DESC 
-        LIMIT ? OFFSET ?
+        LIMIT $1 OFFSET $2
       `;
       const countQuery = 'SELECT COUNT(*) as total FROM mpesa_payments';
       
       const [payments, countResult] = await Promise.all([
         db.query(query, [limit, offset]),
-        db.query(countQuery)
+        db.query(countQuery, [])
       ]);
       
       return {
         payments,
-        total: countResult[0].total,
+        total: parseInt(countResult[0].total),
         page,
-        totalPages: Math.ceil(countResult[0].total / limit)
+        totalPages: Math.ceil(parseInt(countResult[0].total) / limit)
       };
     } catch (error) {
       console.error('Error getting all payments:', error);
