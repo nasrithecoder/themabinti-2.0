@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import axios from 'axios';
+import { Loader2 } from 'lucide-react';
 
 const formSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
@@ -24,6 +25,7 @@ const formSchema = z.object({
   phoneNumber: z.string().min(10, 'Please enter a valid phone number'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
   confirmPassword: z.string().min(8, 'Password must be at least 8 characters'),
+  paymentPhone: z.string().optional(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
@@ -33,6 +35,9 @@ const SignUpForm = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState<'idle' | 'initiated' | 'checking' | 'completed' | 'failed'>('idle');
+  const [checkoutRequestId, setCheckoutRequestId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   
   // Get account type and package from URL params
   const searchParams = new URLSearchParams(location.search);
@@ -48,8 +53,60 @@ const SignUpForm = () => {
       phoneNumber: '',
       password: '',
       confirmPassword: '',
+      paymentPhone: '',
     },
   });
+
+  // Poll payment status for sellers
+  const pollPaymentStatus = async (checkoutId: string, userIdParam: string) => {
+    setPaymentStatus('checking');
+    const maxAttempts = 30; // 5 minutes with 10-second intervals
+    let attempts = 0;
+
+    const checkStatus = async () => {
+      try {
+        const response = await axios.get(`https://themabinti-main-d4az.onrender.com/api/payment-status/${checkoutId}`);
+        
+        if (response.data.status === 'success') {
+          // Complete registration
+          const completeResponse = await axios.post('https://themabinti-main-d4az.onrender.com/api/complete-seller-registration', {
+            userId: userIdParam,
+            checkoutRequestId: checkoutId,
+            packageId
+          });
+
+          setPaymentStatus('completed');
+          toast.success('Payment successful! Registration completed.');
+          navigate('/signin');
+          return;
+        } else if (response.data.status === 'failed') {
+          setPaymentStatus('failed');
+          toast.error('Payment failed. Please try again.');
+          return;
+        }
+
+        // Continue polling if still pending
+        attempts++;
+        if (attempts < maxAttempts) {
+          setTimeout(checkStatus, 10000); // Check every 10 seconds
+        } else {
+          setPaymentStatus('failed');
+          toast.error('Payment timeout. Please try again.');
+        }
+      } catch (error) {
+        console.error('Payment status check error:', error);
+        attempts++;
+        if (attempts < maxAttempts) {
+          setTimeout(checkStatus, 10000);
+        } else {
+          setPaymentStatus('failed');
+          toast.error('Payment verification failed. Please contact support.');
+        }
+      }
+    };
+
+    checkStatus();
+  };
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
@@ -76,7 +133,10 @@ const SignUpForm = () => {
         phoneNumber: cleanedPhoneNumber,
         password: values.password,
         accountType,
-        ...(accountType === 'seller' && { packageId }),
+        ...(accountType === 'seller' && { 
+          packageId,
+          paymentPhone: values.paymentPhone || cleanedPhoneNumber 
+        }),
       };
 
       console.log('Sending register request:', userData); // Debug log
@@ -84,12 +144,22 @@ const SignUpForm = () => {
       // Send POST request to backend
       const response = await axios.post('https://themabinti-main-d4az.onrender.com/api/register', userData);
       
-      // Remove automatic login - don't store token and user data
-      // localStorage.setItem('token', response.data.token);
-      // localStorage.setItem('user', JSON.stringify(response.data.user));
+      if (response.data.paymentInitiated) {
+        // For sellers, handle payment flow
+        setPaymentStatus('initiated');
+        setCheckoutRequestId(response.data.checkoutRequestId);
+        setUserId(response.data.userId);
+        
+        toast.success('Payment request sent to your phone. Please complete the payment.');
+        
+        // Start polling payment status
+        pollPaymentStatus(response.data.checkoutRequestId, response.data.userId);
+      } else {
+        // For buyers, registration is complete
+        toast.success('Account created successfully! Please log in to continue.');
+        navigate('/signin');
+      }
 
-      toast.success('Account created successfully! Please log in to continue.');
-      navigate('/signin'); // Redirect to login page instead of home
     } catch (error: any) {
       console.error('Signup error:', error);
       const message = error.response?.data?.message || error.message || 'Failed to create account. Please try again.';
@@ -98,6 +168,15 @@ const SignUpForm = () => {
       setIsSubmitting(false);
     }
   };
+
+  const getSubmitButtonText = () => {
+    if (paymentStatus === 'initiated') return 'Payment Sent to Phone...';
+    if (paymentStatus === 'checking') return 'Verifying Payment...';
+    if (isSubmitting) return 'Creating Account...';
+    return 'Create Account';
+  };
+
+  const isFormDisabled = isSubmitting || paymentStatus === 'initiated' || paymentStatus === 'checking';
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-md">
@@ -109,6 +188,20 @@ const SignUpForm = () => {
               ? `Register as a seller with the ${packageId} package` 
               : 'Enter your details to create a buyer account'}
           </CardDescription>
+          {paymentStatus === 'initiated' && (
+            <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mt-4">
+              <p className="text-blue-800 text-sm">
+                📱 Check your phone for the M-Pesa payment request and enter your PIN to complete registration.
+              </p>
+            </div>
+          )}
+          {paymentStatus === 'checking' && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 mt-4">
+              <p className="text-yellow-800 text-sm">
+                ⏳ Verifying your payment... This may take a few moments.
+              </p>
+            </div>
+          )}
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -121,7 +214,7 @@ const SignUpForm = () => {
                     <FormItem>
                       <FormLabel>First Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="John" {...field} />
+                        <Input placeholder="John" {...field} disabled={isFormDisabled} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -134,7 +227,7 @@ const SignUpForm = () => {
                     <FormItem>
                       <FormLabel>Last Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="Doe" {...field} />
+                        <Input placeholder="Doe" {...field} disabled={isFormDisabled} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -149,7 +242,7 @@ const SignUpForm = () => {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="john.doe@example.com" type="email" {...field} />
+                      <Input placeholder="john.doe@example.com" type="email" {...field} disabled={isFormDisabled} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -163,12 +256,31 @@ const SignUpForm = () => {
                   <FormItem>
                     <FormLabel>Phone Number</FormLabel>
                     <FormControl>
-                      <Input placeholder="0712345678" {...field} />
+                      <Input placeholder="0712345678" {...field} disabled={isFormDisabled} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+              
+              {accountType === 'seller' && (
+                <FormField
+                  control={form.control}
+                  name="paymentPhone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Payment Phone Number (Optional)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="0712345678 (if different from above)" {...field} disabled={isFormDisabled} />
+                      </FormControl>
+                      <FormMessage />
+                      <p className="text-xs text-gray-500">
+                        Leave blank to use the same number as above for M-Pesa payment
+                      </p>
+                    </FormItem>
+                  )}
+                />
+              )}
               
               <FormField
                 control={form.control}
@@ -177,7 +289,7 @@ const SignUpForm = () => {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input placeholder="********" type="password" {...field} />
+                      <Input placeholder="********" type="password" {...field} disabled={isFormDisabled} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -191,15 +303,18 @@ const SignUpForm = () => {
                   <FormItem>
                     <FormLabel>Confirm Password</FormLabel>
                     <FormControl>
-                      <Input placeholder="********" type="password" {...field} />
+                      <Input placeholder="********" type="password" {...field} disabled={isFormDisabled} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
               
-              <Button type="submit" className="w-full bg-purple-500 hover:bg-purple-600" disabled={isSubmitting}>
-                {isSubmitting ? 'Creating Account...' : 'Create Account'}
+              <Button type="submit" className="w-full bg-purple-500 hover:bg-purple-600" disabled={isFormDisabled}>
+                {(paymentStatus === 'checking' || paymentStatus === 'initiated') && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                {getSubmitButtonText()}
               </Button>
             </form>
           </Form>
