@@ -32,6 +32,14 @@ class MpesaService {
         }
       });
       const token = response.data.access_token;
+      // Debug: Log the token value in sandbox only
+      if (this.env === 'sandbox') {
+        if (token) {
+          console.log('[MPESA][SANDBOX] Received access token:', token);
+        } else {
+          console.log('[MPESA][SANDBOX] No access token received! Raw response:', response.data);
+        }
+      }
       // Cache token for 1 hour (3600 seconds)
       this._accessToken = token;
       this._accessTokenExpiry = now + 3600 * 1000;
