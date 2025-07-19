@@ -33,7 +33,7 @@ class MpesaService {
           Authorization: `Basic ${auth}`
         }
       });
-      console.log('Response: ' + response);
+      console.log('Response: ' + response.data.access_token);
       const token = response.data.access_token;
       // Debug: Log the token value in sandbox only
       if (this.env === 'sandbox') {
