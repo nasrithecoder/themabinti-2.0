@@ -27,21 +27,21 @@ router.post('/register', async (req, res) => {
     if (accountType === 'seller' && !packageId) {
       return res.status(400).json({ 
         message: 'Package ID is required for sellers. Please select a package (basic, standard, or premium).'
-      }); // CHANGE: More specific error message
+      });
     }
     if (accountType === 'seller' && !sellerPackages[packageId]) {
       return res.status(400).json({ 
         message: `Invalid package ID: ${packageId}. Must be one of: basic, standard, premium.`
-      }); // CHANGE: More specific error message
+      });
     }
 
     // Check for existing user
-    let user = await User.findOne({ $or: [{ userName }, { email }] });
-    if (user) {
-      if (user.userName === userName) {
+    const existingUser = await User.findOne({ $or: [{ userName }, { email }] });
+    if (existingUser) {
+      if (existingUser.userName === userName) {
         return res.status(400).json({ message: 'Username already exists' });
       }
-      if (user.email === email) {
+      if (existingUser.email === email) {
         return res.status(400).json({ message: 'Email already exists' });
       }
     }
@@ -50,36 +50,19 @@ router.post('/register', async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Prepare user data
-    let userData = {
-      userName,
-      email,
-      password: hashedPassword,
-      phoneNumber: phoneNumber || undefined,
-      accountType,
-    };
-
-    // For sellers, initiate M-Pesa payment first
     if (accountType === 'seller') {
+      // For sellers, initiate M-Pesa payment, do NOT create user yet
       const packagePrices = {
         basic: 800,
         standard: 1500,
         premium: 2500
       };
-
       const amount = packagePrices[packageId];
       const phone = paymentPhone || phoneNumber;
-
       if (!phone) {
         return res.status(400).json({ message: 'Phone number required for payment' });
       }
-
       try {
-        console.log('in try-catch');
-        // Create user first but without seller package
-        const tempUser = new User(userData);
-        await tempUser.save();
-
         // Initiate M-Pesa payment
         const paymentResult = await mpesaService.initiateSTKPush(
           phone,
@@ -87,36 +70,44 @@ router.post('/register', async (req, res) => {
           packageId,
           `${packageId.charAt(0).toUpperCase() + packageId.slice(1)} Package`
         );
-
         if (!paymentResult.success) {
-          // Delete the temporary user if payment initiation fails
-          await User.findByIdAndDelete(tempUser._id);
           return res.status(400).json({ message: 'Failed to initiate payment' });
         }
-
         // Return payment details for frontend to handle
         return res.status(202).json({
           message: 'Payment initiated. Please complete payment on your phone.',
           paymentInitiated: true,
           checkoutRequestId: paymentResult.checkoutRequestId,
-          userId: tempUser._id,
+          userData: {
+            userName,
+            email,
+            password: hashedPassword,
+            phoneNumber: phoneNumber || undefined,
+            accountType,
+            packageId
+          },
           packageId,
           amount
         });
-
       } catch (paymentError) {
         console.error('Payment initiation error:', paymentError);
         return res.status(400).json({ message: 'Failed to initiate payment' });
       }
     }
-console.log('Out of try-catch mpesa stk push not triggered');
-    // Create and save user
-    const user = new User(userData);
-    await user.save();
+
+    // For buyers, create and save user immediately
+    const newUser = new User({
+      userName,
+      email,
+      password: hashedPassword,
+      phoneNumber: phoneNumber || undefined,
+      accountType,
+    });
+    await newUser.save();
 
     // Generate JWT
     const token = jwt.sign(
-      { userId: user._id, userName: user.userName, email: user.email, accountType: user.accountType },
+      { userId: newUser._id, userName: newUser.userName, email: newUser.email, accountType: newUser.accountType },
       process.env.JWT_SECRET || 'your_jwt_secret',
       { expiresIn: '1h' }
     );
@@ -125,9 +116,9 @@ console.log('Out of try-catch mpesa stk push not triggered');
       message: 'User registered successfully',
       token,
       user: { 
-        userName: user.userName, 
-        email: user.email, 
-        accountType: user.accountType
+        userName: newUser.userName, 
+        email: newUser.email, 
+        accountType: newUser.accountType
       }
     };
     console.log('Sending response:', responseData);
@@ -141,33 +132,39 @@ console.log('Out of try-catch mpesa stk push not triggered');
 
 // Complete seller registration after payment
 router.post('/complete-seller-registration', async (req, res) => {
-  const { userId, checkoutRequestId, packageId } = req.body;
+  const { userName, email, password, phoneNumber, packageId, checkoutRequestId } = req.body;
 
   try {
     // Check payment status
     const payment = await mpesaService.getPaymentByCheckoutId(checkoutRequestId);
-    
     if (!payment || payment.status !== 'success') {
       return res.status(400).json({ message: 'Payment not completed or failed' });
     }
 
-    // Update user with seller package
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+    // Check for existing user again (in case of race condition)
+    const existingUser = await User.findOne({ $or: [{ userName }, { email }] });
+    if (existingUser) {
+      return res.status(400).json({ message: 'User already exists' });
     }
 
-    user.sellerPackage = {
-      packageId,
-      photoUploads: sellerPackages[packageId].photoUploads,
-      videoUploads: sellerPackages[packageId].videoUploads,
-    };
-
-    await user.save();
+    // Create user with seller package
+    const newUser = new User({
+      userName,
+      email,
+      password, // already hashed from previous step
+      phoneNumber: phoneNumber || undefined,
+      accountType: 'seller',
+      sellerPackage: {
+        packageId,
+        photoUploads: sellerPackages[packageId].photoUploads,
+        videoUploads: sellerPackages[packageId].videoUploads,
+      }
+    });
+    await newUser.save();
 
     // Generate JWT
     const token = jwt.sign(
-      { userId: user._id, userName: user.userName, email: user.email, accountType: user.accountType },
+      { userId: newUser._id, userName: newUser.userName, email: newUser.email, accountType: newUser.accountType },
       process.env.JWT_SECRET || 'your_jwt_secret',
       { expiresIn: '1h' }
     );
@@ -176,13 +173,12 @@ router.post('/complete-seller-registration', async (req, res) => {
       message: 'Seller registration completed successfully',
       token,
       user: {
-        userName: user.userName,
-        email: user.email,
-        accountType: user.accountType,
-        sellerPackage: user.sellerPackage
+        userName: newUser.userName,
+        email: newUser.email,
+        accountType: newUser.accountType,
+        sellerPackage: newUser.sellerPackage
       }
     });
-
   } catch (err) {
     console.error('Complete registration error:', err);
     res.status(500).json({ message: 'Server error' });

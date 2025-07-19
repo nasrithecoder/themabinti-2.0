@@ -37,7 +37,7 @@ const SignUpForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'initiated' | 'checking' | 'completed' | 'failed'>('idle');
   const [checkoutRequestId, setCheckoutRequestId] = useState<string | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
+  const [pendingSellerData, setPendingSellerData] = useState<any>(null);
   
   // Get account type and package from URL params
   const searchParams = new URLSearchParams(location.search);
@@ -58,7 +58,7 @@ const SignUpForm = () => {
   });
 
   // Poll payment status for sellers
-  const pollPaymentStatus = async (checkoutId: string, userIdParam: string) => {
+  const pollPaymentStatus = async (checkoutId: string, sellerData: any) => {
     setPaymentStatus('checking');
     const maxAttempts = 30; // 5 minutes with 10-second intervals
     let attempts = 0;
@@ -70,7 +70,7 @@ const SignUpForm = () => {
         if (response.data.status === 'success') {
           // Complete registration
           const completeResponse = await axios.post('https://themabinti-main-d4az.onrender.com/api/complete-seller-registration', {
-            userId: userIdParam,
+            ...sellerData,
             checkoutRequestId: checkoutId,
             packageId
           });
@@ -148,12 +148,25 @@ const SignUpForm = () => {
         // For sellers, handle payment flow
         setPaymentStatus('initiated');
         setCheckoutRequestId(response.data.checkoutRequestId);
-        setUserId(response.data.userId);
+        // Store all user data needed for completion
+        setPendingSellerData({
+          userName: response.data.userData.userName,
+          email: response.data.userData.email,
+          password: response.data.userData.password, // hashed password from backend
+          phoneNumber: response.data.userData.phoneNumber,
+          packageId: response.data.packageId
+        });
         
         toast.success('Payment request sent to your phone. Please complete the payment.');
         
         // Start polling payment status
-        pollPaymentStatus(response.data.checkoutRequestId, response.data.userId);
+        pollPaymentStatus(response.data.checkoutRequestId, {
+          userName: response.data.userData.userName,
+          email: response.data.userData.email,
+          password: response.data.userData.password, // hashed password from backend
+          phoneNumber: response.data.userData.phoneNumber,
+          packageId: response.data.packageId
+        });
       } else {
         // For buyers, registration is complete
         toast.success('Account created successfully! Please log in to continue.');
