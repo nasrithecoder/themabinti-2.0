@@ -143,7 +143,7 @@ const SignUpForm = () => {
 
       // Send POST request to backend
       const response = await axios.post('https://themabinti-main-d4az.onrender.com/api/register', userData);
-      
+      console.log('Registration response:', response.data); // Debug log
       if (response.data.paymentInitiated) {
         // For sellers, handle payment flow
         setPaymentStatus('initiated');
