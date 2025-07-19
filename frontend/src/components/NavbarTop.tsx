@@ -104,6 +104,26 @@ const NavbarTop = () => {
                     </Button>
                   </div>
                   
+                  {/* Mobile Account/Sign in/Sign up */}
+                  <div className="mb-6 flex flex-col space-y-2">
+                    {isLoggedIn ? (
+                      <>
+                        <Link to="/account" className="text-purple-600 font-semibold" onClick={() => setIsDrawerOpen(false)}>My Account</Link>
+                        {isSeller && (
+                          <Link to="/post-service" className="text-purple-600" onClick={() => setIsDrawerOpen(false)}>Post a Service</Link>
+                        )}
+                        <Link to="/admin" className="text-purple-600" onClick={() => setIsDrawerOpen(false)}>Admin Dashboard</Link>
+                        <button onClick={() => { handleLogout(); setIsDrawerOpen(false); }} className="text-red-500 text-left">Logout</button>
+                      </>
+                    ) : (
+                      <>
+                        <Link to="/signin" className="text-purple-600 font-semibold" onClick={() => setIsDrawerOpen(false)}>Sign in</Link>
+                        <Link to="/signup-options" className="text-white bg-purple-500 rounded px-3 py-1 text-center" onClick={() => setIsDrawerOpen(false)}>Sign up</Link>
+                        <Link to="/admin" className="text-purple-600" onClick={() => setIsDrawerOpen(false)}>Admin Dashboard</Link>
+                      </>
+                    )}
+                  </div>
+                  
                   {/* Mobile Search */}
                   <form onSubmit={handleSearch} className="mb-6">
                     <div className="relative">
@@ -216,65 +236,61 @@ const NavbarTop = () => {
             </form>
           </div>
 
-          {/* Account Dropdown */}
+          {/* Account/Sign in/Sign up Buttons */}
           <div className="flex items-center space-x-2">
-            {/* Visible Sign up button */}
-            <Link to="/signup-options">
-              <Button className="bg-purple-500 text-white hover:bg-purple-600" size="sm">
-                Sign up
-              </Button>
-            </Link>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="flex items-center px-2 py-1 rounded-full hover:bg-gray-100">
-                  <User className="h-5 w-5" />
-                  {isLoggedIn && firstName && (
-                    <span className="mx-1 text-sm font-medium">{firstName}</span>
-                  )}
-                  <ChevronDown className="h-4 w-4 ml-1" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                {isLoggedIn ? (
-                  <>
-                    <DropdownMenuItem>
-                      <Link to="/account" className="w-full">My Account</Link>
-                    </DropdownMenuItem>
-                    {isSeller && (
-                      <DropdownMenuItem>
-                        <Link to="/post-service" className="w-full">Post a Service</Link>
-                      </DropdownMenuItem>
+            {isLoggedIn ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center px-2 py-1 rounded-full hover:bg-gray-100">
+                    <User className="h-5 w-5" />
+                    {firstName && (
+                      <span className="mx-1 text-sm font-medium">{firstName}</span>
                     )}
-                    <DropdownMenuItem onClick={handleLogout}>
-                      Logout
-                    </DropdownMenuItem>
-                  </>
-                ) : (
-                  <>
+                    <ChevronDown className="h-4 w-4 ml-1" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem>
+                    <Link to="/account" className="w-full">My Account</Link>
+                  </DropdownMenuItem>
+                  {isSeller && (
                     <DropdownMenuItem>
-                      <Link to="/signin" className="w-full">Sign in</Link>
+                      <Link to="/post-service" className="w-full">Post a Service</Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Link to="/signup-options" className="w-full">Sign up</Link>
-                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem>
+                    <Link to="/admin" className="w-full">Admin Dashboard</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleLogout}>
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <>
+                <Link to="/signin">
+                  <Button variant="outline" size="sm" className="mr-2">Sign in</Button>
+                </Link>
+                <Link to="/signup-options">
+                  <Button className="bg-purple-500 text-white hover:bg-purple-600" size="sm">
+                    Sign up
+                  </Button>
+                </Link>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="flex items-center px-2 py-1 rounded-full hover:bg-gray-100 ml-2">
+                      <User className="h-5 w-5" />
+                      <ChevronDown className="h-4 w-4 ml-1" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
                     <DropdownMenuItem>
                       <Link to="/admin" className="w-full">Admin Dashboard</Link>
                     </DropdownMenuItem>
-                  </>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            {/* Book Appointment Button - Hide text on small mobile */}
-            
-
-            {/* For demo purposes - toggle login state - Hide on mobile */}
-            {/*<button 
-              className="ml-2 hidden md:flex px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-100"
-              onClick={toggleLogin} 
-            >
-              {isLoggedIn ? 'Demo: Logout' : 'Demo: Login'}
-            </button>*/}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            )}
           </div>
         </div>
       </div>
