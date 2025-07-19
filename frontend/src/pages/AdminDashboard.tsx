@@ -33,6 +33,7 @@ import {
 import { toast } from 'sonner';
 import axios from 'axios';
 import { Tooltip } from '@/components/ui/tooltip';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 interface DashboardStats {
   totalUsers: number;
@@ -84,6 +85,17 @@ const AdminDashboard = () => {
     }
   }, []);
 
+  const [usersPage, setUsersPage] = useState(1);
+  const [usersTotalPages, setUsersTotalPages] = useState(1);
+  const [servicesPage, setServicesPage] = useState(1);
+  const [servicesTotalPages, setServicesTotalPages] = useState(1);
+  const [appointmentsPage, setAppointmentsPage] = useState(1);
+  const [appointmentsTotalPages, setAppointmentsTotalPages] = useState(1);
+  const [paymentsPage, setPaymentsPage] = useState(1);
+  const [paymentsTotalPages, setPaymentsTotalPages] = useState(1);
+  const [contactsPage, setContactsPage] = useState(1);
+  const [contactsTotalPages, setContactsTotalPages] = useState(1);
+
   const fetchDashboardData = async () => {
     try {
       const token = localStorage.getItem('adminToken');
@@ -91,19 +103,24 @@ const AdminDashboard = () => {
 
       const [statsRes, usersRes, servicesRes, appointmentsRes, paymentsRes, contactsRes] = await Promise.all([
         axios.get(`${API_BASE}/dashboard/stats`, { headers }),
-        axios.get(`${API_BASE}/users?limit=10`, { headers }),
-        axios.get(`${API_BASE}/services?limit=10`, { headers }),
-        axios.get(`${API_BASE}/appointments?limit=10`, { headers }),
-        axios.get(`${API_BASE}/payments?limit=10`, { headers }),
-        axios.get(`${API_BASE}/contacts?limit=10`, { headers })
+        axios.get(`${API_BASE}/users?page=${usersPage}&limit=10`, { headers }),
+        axios.get(`${API_BASE}/services?page=${servicesPage}&limit=10`, { headers }),
+        axios.get(`${API_BASE}/appointments?page=${appointmentsPage}&limit=10`, { headers }),
+        axios.get(`${API_BASE}/payments?page=${paymentsPage}&limit=10`, { headers }),
+        axios.get(`${API_BASE}/contacts?page=${contactsPage}&limit=10`, { headers })
       ]);
 
       setStats(statsRes.data);
       setUsers(usersRes.data.users);
+      setUsersTotalPages(usersRes.data.totalPages || 1);
       setServices(servicesRes.data.services);
+      setServicesTotalPages(servicesRes.data.totalPages || 1);
       setAppointments(appointmentsRes.data.appointments);
+      setAppointmentsTotalPages(appointmentsRes.data.totalPages || 1);
       setPayments(paymentsRes.data.payments);
+      setPaymentsTotalPages(paymentsRes.data.totalPages || 1);
       setContacts(contactsRes.data.contacts);
+      setContactsTotalPages(contactsRes.data.totalPages || 1);
       setIsLoading(false);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
@@ -198,6 +215,20 @@ const AdminDashboard = () => {
   })();
 
   const [activeTab, setActiveTab] = useState('overview');
+
+  // Refetch data when page changes
+  useEffect(() => { fetchDashboardData(); }, [usersPage, servicesPage, appointmentsPage, paymentsPage, contactsPage]);
+
+  // Pagination component
+  const Pagination = ({ page, totalPages, setPage }: { page: number, totalPages: number, setPage: (p: number) => void }) => (
+    <div className="flex items-center justify-center gap-2 mt-4">
+      <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(page - 1)}>Prev</Button>
+      {Array.from({ length: totalPages }, (_, i) => (
+        <Button key={i} variant={page === i + 1 ? 'default' : 'outline'} size="sm" onClick={() => setPage(i + 1)}>{i + 1}</Button>
+      ))}
+      <Button variant="outline" size="sm" disabled={page === totalPages} onClick={() => setPage(page + 1)}>Next</Button>
+    </div>
+  );
 
   if (!isAuthenticated) {
     return (
@@ -294,59 +325,51 @@ const AdminDashboard = () => {
         <main className="flex-1 p-6">
           {/* Tabs logic replaced with sidebar navigation */}
           {activeTab === 'overview' && (
-            <div className="space-y-4">
+            <div className="space-y-8">
+              {/* Stat Cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <Card className="flex flex-col items-center justify-center p-4">
+                  <CardHeader className="flex flex-row items-center justify-between w-full pb-2">
                     <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-                    <Users className="h-4 w-4 text-muted-foreground" />
+                    <Users className="h-5 w-5 text-purple-500" />
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="flex flex-col items-center">
                     <div className="text-2xl font-bold">{stats?.totalUsers || 0}</div>
-                    <p className="text-xs text-muted-foreground">
-                      {stats?.totalSellers || 0} sellers
-                    </p>
+                    <p className="text-xs text-gray-500">{stats?.totalSellers || 0} sellers</p>
                   </CardContent>
                 </Card>
-
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <Card className="flex flex-col items-center justify-center p-4">
+                  <CardHeader className="flex flex-row items-center justify-between w-full pb-2">
                     <CardTitle className="text-sm font-medium">Total Services</CardTitle>
-                    <Store className="h-4 w-4 text-muted-foreground" />
+                    <Store className="h-5 w-5 text-purple-500" />
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="flex flex-col items-center">
                     <div className="text-2xl font-bold">{stats?.totalServices || 0}</div>
                   </CardContent>
                 </Card>
-
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <Card className="flex flex-col items-center justify-center p-4">
+                  <CardHeader className="flex flex-row items-center justify-between w-full pb-2">
                     <CardTitle className="text-sm font-medium">Appointments</CardTitle>
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <Calendar className="h-5 w-5 text-purple-500" />
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="flex flex-col items-center">
                     <div className="text-2xl font-bold">{stats?.totalAppointments || 0}</div>
-                    <p className="text-xs text-muted-foreground">
-                      {stats?.pendingAppointments || 0} pending
-                    </p>
+                    <p className="text-xs text-gray-500">{stats?.pendingAppointments || 0} pending</p>
                   </CardContent>
                 </Card>
-
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <Card className="flex flex-col items-center justify-center p-4">
+                  <CardHeader className="flex flex-row items-center justify-between w-full pb-2">
                     <CardTitle className="text-sm font-medium">Revenue</CardTitle>
-                    <DollarSign className="h-4 w-4 text-muted-foreground" />
+                    <DollarSign className="h-5 w-5 text-purple-500" />
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="flex flex-col items-center">
                     <div className="text-2xl font-bold">Ksh {stats?.totalRevenue?.toLocaleString() || 0}</div>
-                    <p className="text-xs text-muted-foreground">
-                      {stats?.successfulPayments || 0} successful payments
-                    </p>
+                    <p className="text-xs text-gray-500">{stats?.successfulPayments || 0} successful payments</p>
                   </CardContent>
                 </Card>
               </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Recent Activity */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card>
                   <CardHeader>
                     <CardTitle>Recent Users</CardTitle>
@@ -367,26 +390,20 @@ const AdminDashboard = () => {
                     </div>
                   </CardContent>
                 </Card>
-
                 <Card>
                   <CardHeader>
-                    <CardTitle>Recent Appointments</CardTitle>
+                    <CardTitle>Recent Payments</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {appointments.slice(0, 5).map((appointment: any) => (
-                        <div key={appointment._id} className="flex items-center justify-between">
+                      {payments.slice(0, 5).map((payment: any) => (
+                        <div key={payment.id} className="flex items-center justify-between">
                           <div>
-                            <p className="font-medium">{appointment.name}</p>
-                            <p className="text-sm text-gray-500">{appointment.email}</p>
+                            <p className="font-medium">{payment.package_id}</p>
+                            <p className="text-sm text-gray-500">{payment.phone_number}</p>
                           </div>
-                          <Badge 
-                            variant={
-                              appointment.status === 'confirmed' ? 'default' :
-                              appointment.status === 'pending' ? 'secondary' : 'destructive'
-                            }
-                          >
-                            {appointment.status}
+                          <Badge variant={payment.status === 'success' ? 'default' : payment.status === 'pending' ? 'secondary' : 'destructive'}>
+                            {payment.status}
                           </Badge>
                         </div>
                       ))}
@@ -398,155 +415,205 @@ const AdminDashboard = () => {
           )}
           {activeTab === 'users' && (
             <Card>
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Users Management</CardTitle>
+                <div className="flex gap-2">
+                  <Input placeholder="Search users..." className="w-48" />
+                  {/* Pagination controls can go here */}
+                </div>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Package</TableHead>
-                      <TableHead>Created</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {users.map((user: any) => (
-                      <TableRow key={user._id}>
-                        <TableCell>{user.userName}</TableCell>
-                        <TableCell>{user.email}</TableCell>
-                        <TableCell>
-                          <Badge variant={user.accountType === 'seller' ? 'default' : 'secondary'}>
-                            {user.accountType}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {user.sellerPackage?.packageId || 'N/A'}
-                        </TableCell>
-                        <TableCell>
-                          {new Date(user.createdAt).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => deleteUser(user._id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Avatar</TableHead>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead>Package</TableHead>
+                        <TableHead>Created</TableHead>
+                        <TableHead>Actions</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {users.map((user: any) => (
+                        <TableRow key={user._id} className="hover:bg-gray-50">
+                          <TableCell>
+                            <Avatar className="h-8 w-8">
+                              <AvatarFallback>{user.userName?.[0] || '?'}</AvatarFallback>
+                            </Avatar>
+                          </TableCell>
+                          <TableCell>{user.userName}</TableCell>
+                          <TableCell>{user.email}</TableCell>
+                          <TableCell>
+                            <Badge variant={user.accountType === 'seller' ? 'default' : 'secondary'}>
+                              {user.accountType}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {user.sellerPackage?.packageId || 'N/A'}
+                          </TableCell>
+                          <TableCell>
+                            {new Date(user.createdAt).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell>
+                            <Tooltip content="Delete User">
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => {
+                                  if (window.confirm('Are you sure you want to delete this user? This will also delete all their services.')) deleteUser(user._id);
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </Tooltip>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+                <Pagination page={usersPage} totalPages={usersTotalPages} setPage={setUsersPage} />
               </CardContent>
             </Card>
           )}
           {activeTab === 'services' && (
             <Card>
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Services Management</CardTitle>
+                <div className="flex gap-2">
+                  <Input placeholder="Search services..." className="w-48" />
+                  {/* Pagination controls can go here */}
+                </div>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Service Name</TableHead>
-                      <TableHead>Provider</TableHead>
-                      <TableHead>Category</TableHead>
-                      <TableHead>Price Range</TableHead>
-                      <TableHead>Location</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {services.map((service: any) => (
-                      <TableRow key={service._id}>
-                        <TableCell>{service.name}</TableCell>
-                        <TableCell>{service.userId?.userName || 'Unknown'}</TableCell>
-                        <TableCell>{service.category}</TableCell>
-                        <TableCell>
-                          Ksh {service.minPrice?.toLocaleString()} - {service.maxPrice?.toLocaleString()}
-                        </TableCell>
-                        <TableCell>{service.location}</TableCell>
-                        <TableCell>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => deleteService(service._id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Service Name</TableHead>
+                        <TableHead>Provider</TableHead>
+                        <TableHead>Category</TableHead>
+                        <TableHead>Price Range</TableHead>
+                        <TableHead>Location</TableHead>
+                        <TableHead>Actions</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {services.map((service: any) => (
+                        <TableRow key={service._id} className="hover:bg-gray-50">
+                          <TableCell>{service.name}</TableCell>
+                          <TableCell>{service.userId?.userName || 'Unknown'}</TableCell>
+                          <TableCell>
+                            <Badge variant="secondary">{service.category}</Badge>
+                          </TableCell>
+                          <TableCell>
+                            Ksh {service.minPrice?.toLocaleString()} - {service.maxPrice?.toLocaleString()}
+                          </TableCell>
+                          <TableCell>{service.location}</TableCell>
+                          <TableCell>
+                            <Tooltip content="Delete Service">
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => {
+                                  if (window.confirm('Are you sure you want to delete this service?')) deleteService(service._id);
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </Tooltip>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+                <Pagination page={servicesPage} totalPages={servicesTotalPages} setPage={setServicesPage} />
               </CardContent>
             </Card>
           )}
           {activeTab === 'appointments' && (
             <Card>
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Appointments Management</CardTitle>
+                <div className="flex gap-2">
+                  <Input placeholder="Search appointments..." className="w-48" />
+                  {/* Pagination controls can go here */}
+                </div>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Client</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Time</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {appointments.map((appointment: any) => (
-                      <TableRow key={appointment._id}>
-                        <TableCell>{appointment.name}</TableCell>
-                        <TableCell>{appointment.email}</TableCell>
-                        <TableCell>
-                          {new Date(appointment.date).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell>{appointment.time}</TableCell>
-                        <TableCell>
-                          <Badge 
-                            variant={
-                              appointment.status === 'confirmed' ? 'default' :
-                              appointment.status === 'pending' ? 'secondary' : 'destructive'
-                            }
-                          >
-                            {appointment.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex space-x-2">
-                            <Button
-                              size="sm"
-                              onClick={() => updateAppointmentStatus(appointment._id, 'confirmed')}
-                              disabled={appointment.status === 'confirmed'}
-                            >
-                              <CheckCircle className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => updateAppointmentStatus(appointment._id, 'cancelled')}
-                              disabled={appointment.status === 'cancelled'}
-                            >
-                              <XCircle className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Client</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Time</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Actions</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {appointments.map((appointment: any) => (
+                        <TableRow key={appointment._id} className="hover:bg-gray-50">
+                          <TableCell>{appointment.name}</TableCell>
+                          <TableCell>{appointment.email}</TableCell>
+                          <TableCell>
+                            {new Date(appointment.date).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell>{appointment.time}</TableCell>
+                          <TableCell>
+                            <Badge 
+                              variant={
+                                appointment.status === 'confirmed' ? 'default' :
+                                appointment.status === 'pending' ? 'secondary' : 'destructive'
+                              }
+                            >
+                              {appointment.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="flex gap-2">
+                            <Tooltip content="Confirm Appointment">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => updateAppointmentStatus(appointment._id, 'confirmed')}
+                                disabled={appointment.status === 'confirmed'}
+                              >
+                                <CheckCircle className="h-4 w-4 text-green-600" />
+                              </Button>
+                            </Tooltip>
+                            <Tooltip content="Mark as Pending">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => updateAppointmentStatus(appointment._id, 'pending')}
+                                disabled={appointment.status === 'pending'}
+                              >
+                                <Clock className="h-4 w-4 text-yellow-600" />
+                              </Button>
+                            </Tooltip>
+                            <Tooltip content="Cancel Appointment">
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => updateAppointmentStatus(appointment._id, 'cancelled')}
+                                disabled={appointment.status === 'cancelled'}
+                              >
+                                <XCircle className="h-4 w-4" />
+                              </Button>
+                            </Tooltip>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+                <Pagination page={appointmentsPage} totalPages={appointmentsTotalPages} setPage={setAppointmentsPage} />
               </CardContent>
             </Card>
           )}
@@ -595,45 +662,55 @@ const AdminDashboard = () => {
                     </TableBody>
                   </Table>
                 </div>
+                <Pagination page={paymentsPage} totalPages={paymentsTotalPages} setPage={setPaymentsPage} />
               </CardContent>
             </Card>
           )}
           {activeTab === 'contacts' && (
             <Card>
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Contact Messages</CardTitle>
+                <div className="flex gap-2">
+                  <Input placeholder="Search contacts..." className="w-48" />
+                  {/* Pagination controls can go here */}
+                </div>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Phone</TableHead>
-                      <TableHead>Subject</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {contacts.map((contact: any) => (
-                      <TableRow key={contact._id}>
-                        <TableCell>{contact.name}</TableCell>
-                        <TableCell>{contact.email}</TableCell>
-                        <TableCell>{contact.phone}</TableCell>
-                        <TableCell>{contact.subject}</TableCell>
-                        <TableCell>
-                          {new Date(contact.createdAt).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell>
-                          <Button size="sm" variant="outline">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Phone</TableHead>
+                        <TableHead>Subject</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Actions</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {contacts.map((contact: any) => (
+                        <TableRow key={contact._id} className="hover:bg-gray-50">
+                          <TableCell>{contact.name}</TableCell>
+                          <TableCell>{contact.email}</TableCell>
+                          <TableCell>{contact.phone}</TableCell>
+                          <TableCell>{contact.subject}</TableCell>
+                          <TableCell>
+                            {new Date(contact.createdAt).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell>
+                            <Tooltip content="View Message">
+                              <Button size="sm" variant="outline">
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            </Tooltip>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+                <Pagination page={contactsPage} totalPages={contactsTotalPages} setPage={setContactsPage} />
               </CardContent>
             </Card>
           )}
