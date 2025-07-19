@@ -38,7 +38,7 @@ A comprehensive platform connecting Kenyan women with quality beauty, health, an
 ### Backend
 - **Node.js** with Express.js
 - **MongoDB** with Mongoose ODM
-- **MySQL** for payment tracking
+- **PostgreSQL** for payment tracking
 - **JWT** for authentication
 - **bcryptjs** for password hashing
 - **M-Pesa STK Push API** for payments
@@ -48,7 +48,7 @@ A comprehensive platform connecting Kenyan women with quality beauty, health, an
 ### Prerequisites
 - Node.js (v18 or higher)
 - MongoDB database
-- MySQL database (for payments)
+- PostgreSQL database (for payments)
 - M-Pesa developer account
 
 ### Environment Variables
@@ -58,6 +58,7 @@ Create a `.env` file in the backend directory:
 ```env
 # Database Configuration
 MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/themabinti
+DATABASE_URL=postgresql://username:password@hostname:port/database_name
 
 # JWT Secret
 JWT_SECRET=your_jwt_secret_key_here
@@ -69,12 +70,6 @@ MPESA_PASSKEY=your_mpesa_passkey
 MPESA_SHORTCODE=174379
 MPESA_ENVIRONMENT=sandbox
 BASE_URL=http://localhost:5000
-
-# MySQL Configuration (for payments)
-DB_HOST=localhost
-DB_USER=root
-DB_PASSWORD=your_mysql_password
-DB_NAME=themabinti_payments
 
 # Server Configuration
 PORT=5000
@@ -109,7 +104,7 @@ ADMIN_PASSWORD=admin123
 
 3. **Set up databases**
    - Create MongoDB database
-   - Create MySQL database for payments
+   - Create PostgreSQL database for payments
    - Update environment variables
 
 4. **Create initial admin user**
@@ -257,10 +252,24 @@ Ensure all environment variables are properly set in your production environment
 
 ### Deployment Platforms
 The application can be deployed on:
-- **Heroku** (with MongoDB Atlas and ClearDB MySQL)
+- **Render** (recommended - with MongoDB Atlas and PostgreSQL)
+- **Heroku** (with MongoDB Atlas and PostgreSQL)
 - **Vercel** (frontend) + **Railway** (backend)
 - **DigitalOcean** App Platform
 - **AWS** EC2 with RDS
+
+## 🌐 Render Deployment
+
+For detailed deployment instructions to Render, see [RENDER_DEPLOYMENT.md](RENDER_DEPLOYMENT.md).
+
+### Quick Deployment Steps:
+1. **Database Setup**: MongoDB Atlas + Render PostgreSQL
+2. **Backend**: Deploy as Web Service on Render
+3. **Frontend**: Deploy as Static Site on Render
+4. **Configuration**: Set environment variables
+5. **Testing**: Verify M-Pesa integration and admin dashboard
+
+See [DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md) for a complete deployment checklist.
 
 ## 🔮 Future Enhancements
 
