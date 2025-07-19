@@ -218,6 +218,12 @@ const NavbarTop = () => {
 
           {/* Account Dropdown */}
           <div className="flex items-center space-x-2">
+            {/* Visible Sign up button */}
+            <Link to="/signup-options">
+              <Button className="bg-purple-500 text-white hover:bg-purple-600" size="sm">
+                Sign up
+              </Button>
+            </Link>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center px-2 py-1 rounded-full hover:bg-gray-100">
@@ -250,6 +256,9 @@ const NavbarTop = () => {
                     </DropdownMenuItem>
                     <DropdownMenuItem>
                       <Link to="/signup-options" className="w-full">Sign up</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Link to="/admin" className="w-full">Admin Dashboard</Link>
                     </DropdownMenuItem>
                   </>
                 )}
