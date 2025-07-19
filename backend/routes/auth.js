@@ -17,19 +17,24 @@ router.post('/register', async (req, res) => {
   const { userName, email, password, accountType, packageId, phoneNumber, paymentPhone } = req.body;
 
   try {
+    console.log('[REGISTER] Incoming request:', { userName, email, accountType, packageId, phoneNumber, paymentPhone });
     // Validate input
     if (!userName || !email || !password || !accountType) {
+      console.log('[REGISTER] Missing required fields');
       return res.status(400).json({ message: 'All required fields must be provided' });
     }
     if (!['buyer', 'seller'].includes(accountType)) {
+      console.log('[REGISTER] Invalid account type:', accountType);
       return res.status(400).json({ message: 'Invalid account type' });
     }
     if (accountType === 'seller' && !packageId) {
+      console.log('[REGISTER] Seller missing packageId');
       return res.status(400).json({ 
         message: 'Package ID is required for sellers. Please select a package (basic, standard, or premium).'
       });
     }
     if (accountType === 'seller' && !sellerPackages[packageId]) {
+      console.log('[REGISTER] Invalid seller packageId:', packageId);
       return res.status(400).json({ 
         message: `Invalid package ID: ${packageId}. Must be one of: basic, standard, premium.`
       });
@@ -39,16 +44,20 @@ router.post('/register', async (req, res) => {
     const existingUser = await User.findOne({ $or: [{ userName }, { email }] });
     if (existingUser) {
       if (existingUser.userName === userName) {
+        console.log('[REGISTER] Username already exists:', userName);
         return res.status(400).json({ message: 'Username already exists' });
       }
       if (existingUser.email === email) {
+        console.log('[REGISTER] Email already exists:', email);
         return res.status(400).json({ message: 'Email already exists' });
       }
     }
 
     // Hash password
+    console.log('[REGISTER] Hashing password...');
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
+    console.log('[REGISTER] Password hashed.');
 
     if (accountType === 'seller') {
       // For sellers, initiate M-Pesa payment, do NOT create user yet
@@ -60,9 +69,11 @@ router.post('/register', async (req, res) => {
       const amount = packagePrices[packageId];
       const phone = paymentPhone || phoneNumber;
       if (!phone) {
+        console.log('[REGISTER] Seller missing phone for payment');
         return res.status(400).json({ message: 'Phone number required for payment' });
       }
       try {
+        console.log('[REGISTER] Initiating M-Pesa payment:', { phone, amount, packageId });
         // Initiate M-Pesa payment
         const paymentResult = await mpesaService.initiateSTKPush(
           phone,
@@ -70,10 +81,13 @@ router.post('/register', async (req, res) => {
           packageId,
           `${packageId.charAt(0).toUpperCase() + packageId.slice(1)} Package`
         );
+        console.log('[REGISTER] M-Pesa payment initiation result:', paymentResult);
         if (!paymentResult.success) {
+          console.log('[REGISTER] Failed to initiate payment');
           return res.status(400).json({ message: 'Failed to initiate payment' });
         }
         // Return payment details for frontend to handle
+        console.log('[REGISTER] Payment initiated, returning response to frontend');
         return res.status(202).json({
           message: 'Payment initiated. Please complete payment on your phone.',
           paymentInitiated: true,
@@ -90,12 +104,13 @@ router.post('/register', async (req, res) => {
           amount
         });
       } catch (paymentError) {
-        console.error('Payment initiation error:', paymentError);
+        console.error('[REGISTER] Payment initiation error:', paymentError);
         return res.status(400).json({ message: 'Failed to initiate payment' });
       }
     }
 
     // For buyers, create and save user immediately
+    console.log('[REGISTER] Creating new buyer user...');
     const newUser = new User({
       userName,
       email,
@@ -104,6 +119,7 @@ router.post('/register', async (req, res) => {
       accountType,
     });
     await newUser.save();
+    console.log('[REGISTER] Buyer user created:', newUser._id);
 
     // Generate JWT
     const token = jwt.sign(
@@ -121,11 +137,11 @@ router.post('/register', async (req, res) => {
         accountType: newUser.accountType
       }
     };
-    console.log('Sending response:', responseData);
+    console.log('[REGISTER] Sending response:', responseData);
 
     res.status(201).json(responseData);
   } catch (err) {
-    console.error('Error in /register:', err);
+    console.error('[REGISTER] Error in /register:', err);
     res.status(500).json({ message: 'Server error', details: err.message });
   }
 });
