@@ -20,6 +20,7 @@ class MpesaService {
   // Generate access token (with in-memory caching for 1 hour)
   async getAccessToken() {
     const now = Date.now();
+    console.log('Access token generation method triggered!');
     // TEMP: Disable cache for debugging
     // if (this._accessToken && this._accessTokenExpiry && now < this._accessTokenExpiry) {
     //   // Return cached token
@@ -32,6 +33,7 @@ class MpesaService {
           Authorization: `Basic ${auth}`
         }
       });
+      console.log('Response: ' + response);
       const token = response.data.access_token;
       // Debug: Log the token value in sandbox only
       if (this.env === 'sandbox') {
