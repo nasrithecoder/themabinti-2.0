@@ -75,6 +75,7 @@ router.post('/register', async (req, res) => {
       }
 
       try {
+        console.log('in try-catch');
         // Create user first but without seller package
         const tempUser = new User(userData);
         await tempUser.save();
@@ -108,7 +109,7 @@ router.post('/register', async (req, res) => {
         return res.status(400).json({ message: 'Failed to initiate payment' });
       }
     }
-
+console.log('Out of try-catch mpesa stk push not triggered');
     // Create and save user
     const user = new User(userData);
     await user.save();
