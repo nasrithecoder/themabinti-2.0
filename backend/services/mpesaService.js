@@ -12,10 +12,18 @@ class MpesaService {
     this.baseUrl = this.env === 'production' 
       ? 'https://api.safaricom.co.ke' 
       : 'https://sandbox.safaricom.co.ke';
+    // --- SANDBOX TESTING: In-memory token cache (resets on server restart) ---
+    this._accessToken = null;
+    this._accessTokenExpiry = null;
   }
 
-  // Generate access token
+  // Generate access token (with in-memory caching for 1 hour)
   async getAccessToken() {
+    const now = Date.now();
+    if (this._accessToken && this._accessTokenExpiry && now < this._accessTokenExpiry) {
+      // Return cached token
+      return this._accessToken;
+    }
     try {
       const auth = Buffer.from(`${this.consumerKey}:${this.consumerSecret}`).toString('base64');
       const response = await axios.get(`${this.baseUrl}/oauth/v1/generate?grant_type=client_credentials`, {
@@ -23,9 +31,18 @@ class MpesaService {
           Authorization: `Basic ${auth}`
         }
       });
-      return response.data.access_token;
+      const token = response.data.access_token;
+      // Cache token for 1 hour (3600 seconds)
+      this._accessToken = token;
+      this._accessTokenExpiry = now + 3600 * 1000;
+      return token;
     } catch (error) {
-      console.error('Error getting access token:', error);
+      // Improved error logging
+      if (error.response) {
+        console.error('Error getting access token:', error.response.status, error.response.data);
+      } else {
+        console.error('Error getting access token:', error.message || error);
+      }
       throw new Error('Failed to get M-Pesa access token');
     }
   }
