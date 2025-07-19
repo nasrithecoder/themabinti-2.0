@@ -40,6 +40,7 @@ class MpesaService {
         console.log('Passed env check for sandbox');
         if (token) {
           console.log('[MPESA][SANDBOX] Received access token:', token);
+          
         } else {
           console.log('[MPESA][SANDBOX] No access token received! Raw response:', response.data);
         }
@@ -102,7 +103,8 @@ class MpesaService {
         TransactionDesc: `Payment for ${packageName} package`
       };
 
-      console.log('CallbackUrl: ' + `${process.env.BASE_URL}/api/mpesa/callback`);
+      // Debug: Log the generated CallBackURL
+      console.log('[MPESA][DEBUG] Generated CallBackURL:', payload.CallBackURL);
 
       const response = await axios.post(
         `${this.baseUrl}/mpesa/stkpush/v1/processrequest`,
