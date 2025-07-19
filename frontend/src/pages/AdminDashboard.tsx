@@ -26,10 +26,13 @@ import {
   Trash2,
   CheckCircle,
   XCircle,
-  Clock
+  Clock,
+  Menu,
+  X
 } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
+import { Tooltip } from '@/components/ui/tooltip';
 
 interface DashboardStats {
   totalUsers: number;
@@ -42,6 +45,15 @@ interface DashboardStats {
   successfulPayments: number;
   totalRevenue: number;
 }
+
+const sidebarLinks = [
+  { label: 'Dashboard', icon: <TrendingUp />, value: 'overview' },
+  { label: 'Users', icon: <Users />, value: 'users' },
+  { label: 'Services', icon: <Store />, value: 'services' },
+  { label: 'Appointments', icon: <Calendar />, value: 'appointments' },
+  { label: 'Payments', icon: <DollarSign />, value: 'payments' },
+  { label: 'Contacts', icon: <Mail />, value: 'contacts' },
+];
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -170,6 +182,23 @@ const AdminDashboard = () => {
     }
   };
 
+  // Responsive sidebar state
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Get admin email from token (if available)
+  const adminEmail = (() => {
+    const token = localStorage.getItem('adminToken');
+    if (!token) return '';
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.email || '';
+    } catch {
+      return '';
+    }
+  })();
+
+  const [activeTab, setActiveTab] = useState('overview');
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -219,135 +248,155 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
-            <Button onClick={handleLogout} variant="outline">
-              <LogOut className="h-4 w-4 mr-2" />
-              Logout
+    <div className="min-h-screen flex bg-gray-50">
+      {/* Sidebar */}
+      <aside className={`fixed md:static z-40 top-0 left-0 h-full bg-white shadow-lg flex flex-col transition-all duration-200 ${sidebarOpen ? 'w-56' : 'w-16'} md:w-56`}>
+        <div className="flex items-center justify-between px-4 py-4 border-b">
+          <span className="text-2xl font-bold text-purple-500">{sidebarOpen || window.innerWidth >= 768 ? 'Admin' : 'A'}</span>
+          <button className="md:hidden" onClick={() => setSidebarOpen(!sidebarOpen)}>
+            {sidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+        </div>
+        <nav className="flex-1 flex flex-col gap-2 mt-4">
+          {sidebarLinks.map(link => (
+            <button
+              key={link.value}
+              className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors w-full text-left ${activeTab === link.value ? 'bg-purple-100 text-purple-700 font-semibold' : 'hover:bg-gray-100 text-gray-700'}`}
+              onClick={() => { setActiveTab(link.value); setSidebarOpen(false); }}
+            >
+              <span className="h-5 w-5">{link.icon}</span>
+              <span className={`${sidebarOpen || window.innerWidth >= 768 ? 'block' : 'hidden'} transition-all`}>{link.label}</span>
+            </button>
+          ))}
+        </nav>
+        <div className="mt-auto px-4 py-4 border-t">
+          <button onClick={handleLogout} className="flex items-center gap-2 text-red-500 hover:text-red-700 w-full">
+            <LogOut className="h-5 w-5" />
+            <span className={`${sidebarOpen || window.innerWidth >= 768 ? 'block' : 'hidden'}`}>Logout</span>
+          </button>
+        </div>
+      </aside>
+
+      {/* Main content */}
+      <div className="flex-1 flex flex-col min-h-screen ml-0 md:ml-56">
+        {/* Sticky Header */}
+        <header className="sticky top-0 z-30 bg-white shadow flex items-center justify-between px-6 py-4 border-b">
+          <h1 className="text-xl font-bold text-gray-900">{sidebarLinks.find(l => l.value === activeTab)?.label || 'Dashboard'}</h1>
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-gray-600">{adminEmail}</span>
+            <Button onClick={handleLogout} variant="outline" size="sm">
+              <LogOut className="h-4 w-4 mr-1" /> Logout
             </Button>
           </div>
-        </div>
-      </div>
+        </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats?.totalUsers || 0}</div>
-              <p className="text-xs text-muted-foreground">
-                {stats?.totalSellers || 0} sellers
-              </p>
-            </CardContent>
-          </Card>
+        {/* Main Dashboard Content */}
+        <main className="flex-1 p-6">
+          {/* Tabs logic replaced with sidebar navigation */}
+          {activeTab === 'overview' && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+                    <Users className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{stats?.totalUsers || 0}</div>
+                    <p className="text-xs text-muted-foreground">
+                      {stats?.totalSellers || 0} sellers
+                    </p>
+                  </CardContent>
+                </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Services</CardTitle>
-              <Store className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats?.totalServices || 0}</div>
-            </CardContent>
-          </Card>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total Services</CardTitle>
+                    <Store className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{stats?.totalServices || 0}</div>
+                  </CardContent>
+                </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Appointments</CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats?.totalAppointments || 0}</div>
-              <p className="text-xs text-muted-foreground">
-                {stats?.pendingAppointments || 0} pending
-              </p>
-            </CardContent>
-          </Card>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Appointments</CardTitle>
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{stats?.totalAppointments || 0}</div>
+                    <p className="text-xs text-muted-foreground">
+                      {stats?.pendingAppointments || 0} pending
+                    </p>
+                  </CardContent>
+                </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Revenue</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">Ksh {stats?.totalRevenue?.toLocaleString() || 0}</div>
-              <p className="text-xs text-muted-foreground">
-                {stats?.successfulPayments || 0} successful payments
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Revenue</CardTitle>
+                    <DollarSign className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">Ksh {stats?.totalRevenue?.toLocaleString() || 0}</div>
+                    <p className="text-xs text-muted-foreground">
+                      {stats?.successfulPayments || 0} successful payments
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
 
-        {/* Tabs */}
-        <Tabs defaultValue="overview" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="users">Users</TabsTrigger>
-            <TabsTrigger value="services">Services</TabsTrigger>
-            <TabsTrigger value="appointments">Appointments</TabsTrigger>
-            <TabsTrigger value="payments">Payments</TabsTrigger>
-            <TabsTrigger value="contacts">Contacts</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="overview" className="space-y-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Recent Users</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {users.slice(0, 5).map((user: any) => (
-                      <div key={user._id} className="flex items-center justify-between">
-                        <div>
-                          <p className="font-medium">{user.userName}</p>
-                          <p className="text-sm text-gray-500">{user.email}</p>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Recent Users</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {users.slice(0, 5).map((user: any) => (
+                        <div key={user._id} className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium">{user.userName}</p>
+                            <p className="text-sm text-gray-500">{user.email}</p>
+                          </div>
+                          <Badge variant={user.accountType === 'seller' ? 'default' : 'secondary'}>
+                            {user.accountType}
+                          </Badge>
                         </div>
-                        <Badge variant={user.accountType === 'seller' ? 'default' : 'secondary'}>
-                          {user.accountType}
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Recent Appointments</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {appointments.slice(0, 5).map((appointment: any) => (
-                      <div key={appointment._id} className="flex items-center justify-between">
-                        <div>
-                          <p className="font-medium">{appointment.name}</p>
-                          <p className="text-sm text-gray-500">{appointment.email}</p>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Recent Appointments</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {appointments.slice(0, 5).map((appointment: any) => (
+                        <div key={appointment._id} className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium">{appointment.name}</p>
+                            <p className="text-sm text-gray-500">{appointment.email}</p>
+                          </div>
+                          <Badge 
+                            variant={
+                              appointment.status === 'confirmed' ? 'default' :
+                              appointment.status === 'pending' ? 'secondary' : 'destructive'
+                            }
+                          >
+                            {appointment.status}
+                          </Badge>
                         </div>
-                        <Badge 
-                          variant={
-                            appointment.status === 'confirmed' ? 'default' :
-                            appointment.status === 'pending' ? 'secondary' : 'destructive'
-                          }
-                        >
-                          {appointment.status}
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
-          </TabsContent>
-
-          <TabsContent value="users">
+          )}
+          {activeTab === 'users' && (
             <Card>
               <CardHeader>
                 <CardTitle>Users Management</CardTitle>
@@ -395,9 +444,8 @@ const AdminDashboard = () => {
                 </Table>
               </CardContent>
             </Card>
-          </TabsContent>
-
-          <TabsContent value="services">
+          )}
+          {activeTab === 'services' && (
             <Card>
               <CardHeader>
                 <CardTitle>Services Management</CardTitle>
@@ -439,9 +487,8 @@ const AdminDashboard = () => {
                 </Table>
               </CardContent>
             </Card>
-          </TabsContent>
-
-          <TabsContent value="appointments">
+          )}
+          {activeTab === 'appointments' && (
             <Card>
               <CardHeader>
                 <CardTitle>Appointments Management</CardTitle>
@@ -502,54 +549,56 @@ const AdminDashboard = () => {
                 </Table>
               </CardContent>
             </Card>
-          </TabsContent>
-
-          <TabsContent value="payments">
-            <Card>
+          )}
+          {activeTab === 'payments' && (
+            <Card className="mb-8">
               <CardHeader>
                 <CardTitle>Payments Management</CardTitle>
+                <CardDescription>View and manage all payments</CardDescription>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Package</TableHead>
-                      <TableHead>Amount</TableHead>
-                      <TableHead>Phone</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Receipt</TableHead>
-                      <TableHead>Date</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {payments.map((payment: any) => (
-                      <TableRow key={payment.id}>
-                        <TableCell>{payment.package_id}</TableCell>
-                        <TableCell>Ksh {parseFloat(payment.amount).toLocaleString()}</TableCell>
-                        <TableCell>{payment.phone_number}</TableCell>
-                        <TableCell>
-                          <Badge 
-                            variant={
-                              payment.status === 'success' ? 'default' :
-                              payment.status === 'pending' ? 'secondary' : 'destructive'
-                            }
-                          >
-                            {payment.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{payment.mpesa_receipt_number || 'N/A'}</TableCell>
-                        <TableCell>
-                          {new Date(payment.created_at).toLocaleDateString()}
-                        </TableCell>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Package</TableHead>
+                        <TableHead>Amount</TableHead>
+                        <TableHead>Phone</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Receipt</TableHead>
+                        <TableHead>Date</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {payments.map((payment: any) => (
+                        <TableRow key={payment.id} className="hover:bg-gray-50">
+                          <TableCell>{payment.package_id}</TableCell>
+                          <TableCell className="font-semibold">Ksh {parseFloat(payment.amount).toLocaleString()}</TableCell>
+                          <TableCell>{payment.phone_number}</TableCell>
+                          <TableCell>
+                            <Badge 
+                              variant={
+                                payment.status === 'success' ? 'default' :
+                                payment.status === 'pending' ? 'secondary' : 'destructive'
+                              }
+                              className={`px-2 py-1 rounded-full text-xs ${payment.status === 'success' ? 'bg-green-100 text-green-700' : payment.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}
+                            >
+                              {payment.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>{payment.mpesa_receipt_number || 'N/A'}</TableCell>
+                          <TableCell>
+                            {new Date(payment.created_at).toLocaleDateString()}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               </CardContent>
             </Card>
-          </TabsContent>
-
-          <TabsContent value="contacts">
+          )}
+          {activeTab === 'contacts' && (
             <Card>
               <CardHeader>
                 <CardTitle>Contact Messages</CardTitle>
@@ -587,8 +636,8 @@ const AdminDashboard = () => {
                 </Table>
               </CardContent>
             </Card>
-          </TabsContent>
-        </Tabs>
+          )}
+        </main>
       </div>
     </div>
   );
