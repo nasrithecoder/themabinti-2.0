@@ -10,13 +10,13 @@ Node.js/Express backend for the Themabinti Services Hub platform with MongoDB an
 - **Appointment System**: Booking and management
 - **Admin Dashboard**: Complete platform management
 - **File Upload**: Base64 image/video handling
-- **Payment Tracking**: MySQL database for payment records
+- **Payment Tracking**: PostgreSQL database for payment records
 
 ## Technology Stack
 
 - Node.js with Express.js
 - MongoDB with Mongoose ODM
-- MySQL for payment tracking
+- PostgreSQL for payment tracking
 - JWT for authentication
 - bcryptjs for password hashing
 - M-Pesa STK Push API
@@ -44,6 +44,7 @@ npm start
 ```env
 # Database Configuration
 MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/themabinti
+DATABASE_URL=postgresql://username:password@hostname:port/database_name
 
 # JWT Secret
 JWT_SECRET=your_jwt_secret_key_here
@@ -55,12 +56,6 @@ MPESA_PASSKEY=your_mpesa_passkey
 MPESA_SHORTCODE=174379
 MPESA_ENVIRONMENT=sandbox
 BASE_URL=http://localhost:5000
-
-# MySQL Configuration (for payments)
-DB_HOST=localhost
-DB_USER=root
-DB_PASSWORD=your_mysql_password
-DB_NAME=themabinti_payments
 
 # Server Configuration
 PORT=5000
@@ -169,24 +164,24 @@ NODE_ENV=development
 }
 ```
 
-### MySQL Tables
+### PostgreSQL Tables
 
 #### mpesa_payments
 ```sql
 CREATE TABLE mpesa_payments (
-  id INT PRIMARY KEY AUTO_INCREMENT,
+  id SERIAL PRIMARY KEY,
   checkout_request_id VARCHAR(255) NOT NULL UNIQUE,
   package_id VARCHAR(50) NOT NULL,
   amount DECIMAL(10,2) NOT NULL,
   phone_number VARCHAR(15) NOT NULL,
   timestamp VARCHAR(14) NOT NULL,
-  status ENUM('pending', 'success', 'failed') DEFAULT 'pending',
+  status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'success', 'failed')),
   mpesa_receipt_number VARCHAR(255),
   transaction_date VARCHAR(14),
   transaction_amount DECIMAL(10,2),
   user_id VARCHAR(255),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
@@ -233,7 +228,7 @@ npm run dev
 npm start
 
 # Database initialization
-# MySQL tables are created automatically on first run
+# PostgreSQL tables are created automatically on first run
 ```
 
 ## Testing
@@ -254,7 +249,7 @@ curl -X POST http://localhost:5000/api/mpesa/initiate \
 
 ### Environment Setup
 1. Set up MongoDB database
-2. Set up MySQL database
+2. Set up PostgreSQL database
 3. Configure M-Pesa credentials
 4. Set environment variables
 5. Deploy to hosting platform
@@ -265,6 +260,18 @@ curl -X POST http://localhost:5000/api/mpesa/initiate \
 - Set up proper logging
 - Configure database backups
 - Set up monitoring
+- Use PostgreSQL for better Render compatibility
+
+## 🌐 Render Deployment
+
+This backend is optimized for deployment on Render:
+
+1. **PostgreSQL Integration**: Uses `pg` driver for better Render compatibility
+2. **Environment Variables**: Configured for Render's environment
+3. **Auto-scaling**: Supports Render's auto-scaling features
+4. **Health Checks**: Built-in health endpoints for monitoring
+
+See [RENDER_DEPLOYMENT.md](../RENDER_DEPLOYMENT.md) for complete deployment instructions.
 
 ## Contributing
 
