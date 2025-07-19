@@ -97,7 +97,7 @@ class MpesaService {
         PartyA: formattedPhone,
         PartyB: this.shortcode,
         PhoneNumber: formattedPhone,
-        CallBackURL: `${process.env.BASE_URL}/api/callback`,
+        CallBackURL: `${process.env.BASE_URL}/api/mpesa/callback`,
         AccountReference: `PKG-${packageId}`,
         TransactionDesc: `Payment for ${packageName} package`
       };
