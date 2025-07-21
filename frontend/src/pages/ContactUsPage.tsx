@@ -84,8 +84,8 @@ const ContactUsPage = () => {
                       </div>
                       <div>
                         <h3 className="font-semibold text-gray-700">Email Us</h3>
-                        <p className="text-gray-600 mt-1">info@themabinti.com</p>
-                        <p className="text-gray-600">support@themabinti.com</p>
+                        <p className="text-gray-600 mt-1">mabintionline@gmail.com</p>
+                        {/* <p className="text-gray-600">support@themabinti.com</p> */}
                       </div>
                     </div>
                     
@@ -95,8 +95,8 @@ const ContactUsPage = () => {
                       </div>
                       <div>
                         <h3 className="font-semibold text-gray-700">Call Us</h3>
-                        <p className="text-gray-600 mt-1">+254 712 345 678</p>
-                        <p className="text-gray-600">+254 798 765 432</p>
+                        <p className="text-gray-600 mt-1">+254 712316960</p>
+                        {/* <p className="text-gray-600">+254 798 765 432</p> */}
                       </div>
                     </div>
                     
