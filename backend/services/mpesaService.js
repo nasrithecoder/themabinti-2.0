@@ -14,14 +14,16 @@ class MpesaService {
       : 'https://sandbox.safaricom.co.ke';
 
     // --- DEBUG LOGGING ---
-    console.log('[MPESA DEBUG] Initializing MpesaService');
-    console.log(`[MPESA DEBUG] Environment: ${this.env}`);
-    console.log(`[MPESA DEBUG] Base URL: ${this.baseUrl}`);
-    console.log(`[MPESA DEBUG] Consumer Key exists: ${!!this.consumerKey}`);
-    console.log(`[MPESA DEBUG] Consumer Secret exists: ${!!this.consumerSecret}`);
-    console.log(`[MPESA DEBUG] Passkey exists: ${!!this.passkey}`);
-    console.log(`[MPESA DEBUG] Shortcode: ${this.shortcode}`);
-    console.log(`[MPESA DEBUG] Callback Base URL: ${process.env.BASE_URL}`);
+    console.log('--- [MPESA DEBUG] Verifying M-Pesa Environment Variables ---');
+    console.log(`[MPESA DEBUG] NODE_ENV: ${process.env.NODE_ENV}`);
+    console.log(`[MPESA DEBUG] MPESA_CONSUMER_KEY: ${this.consumerKey || '==> NOT SET'}`);
+    console.log(`[MPESA DEBUG] MPESA_CONSUMER_SECRET: ${this.consumerSecret ? '******' : '==> NOT SET'}`);
+    console.log(`[MPESA DEBUG] MPESA_PASSKEY: ${this.passkey ? '******' : '==> NOT SET'}`);
+    console.log(`[MPESA DEBUG] MPESA_SHORTCODE: ${this.shortcode || '==> NOT SET'}`);
+    console.log(`[MPESA DEBUG] BASE_URL (for callback): ${process.env.BASE_URL || '==> NOT SET'}`);
+    console.log(`[MPESA DEBUG] Inferred Environment: ${this.env}`);
+    console.log(`[MPESA DEBUG] Inferred Base URL: ${this.baseUrl}`);
+    console.log('--- [MPESA DEBUG] End of Environment Variable Check ---');
 
     // --- SANDBOX TESTING: In-memory token cache (resets on server restart) ---
     this._accessToken = null;
