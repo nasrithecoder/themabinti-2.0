@@ -12,6 +12,17 @@ class MpesaService {
     this.baseUrl = this.env === 'production' 
       ? 'https://api.safaricom.co.ke' 
       : 'https://sandbox.safaricom.co.ke';
+
+    // --- DEBUG LOGGING ---
+    console.log('[MPESA DEBUG] Initializing MpesaService');
+    console.log(`[MPESA DEBUG] Environment: ${this.env}`);
+    console.log(`[MPESA DEBUG] Base URL: ${this.baseUrl}`);
+    console.log(`[MPESA DEBUG] Consumer Key exists: ${!!this.consumerKey}`);
+    console.log(`[MPESA DEBUG] Consumer Secret exists: ${!!this.consumerSecret}`);
+    console.log(`[MPESA DEBUG] Passkey exists: ${!!this.passkey}`);
+    console.log(`[MPESA DEBUG] Shortcode: ${this.shortcode}`);
+    console.log(`[MPESA DEBUG] Callback Base URL: ${process.env.BASE_URL}`);
+
     // --- SANDBOX TESTING: In-memory token cache (resets on server restart) ---
     this._accessToken = null;
     this._accessTokenExpiry = null;
@@ -20,41 +31,35 @@ class MpesaService {
   // Generate access token (with in-memory caching for 1 hour)
   async getAccessToken() {
     const now = Date.now();
-    console.log('Access token generation method triggered!');
+    console.log('[MPESA DEBUG] Attempting to get access token...');
     if (this._accessToken && this._accessTokenExpiry && now < this._accessTokenExpiry) {
-      // Return cached token
+      console.log('[MPESA DEBUG] Returning cached access token.');
       return this._accessToken;
     }
     try {
+      console.log('[MPESA DEBUG] No cached token. Requesting new token...');
       const auth = Buffer.from(`${this.consumerKey}:${this.consumerSecret}`).toString('base64');
       const response = await axios.get(`${this.baseUrl}/oauth/v1/generate?grant_type=client_credentials`, {
         headers: {
           Authorization: `Basic ${auth}`
         }
       });
-      console.log('Response: ' + response.data.access_token);
       const token = response.data.access_token;
-      // Debug: Log the token value in sandbox only
-      if (this.env === 'sandbox') {
-        console.log('Passed env check for sandbox');
-        if (token) {
-          console.log('[MPESA][SANDBOX] Received access token:', token);
-          
-        } else {
-          console.log('[MPESA][SANDBOX] No access token received! Raw response:', response.data);
-        }
+      
+      if (token) {
+        console.log('[MPESA DEBUG] Successfully received new access token.');
+      } else {
+        console.warn('[MPESA DEBUG] No access token received in response. Full response:', response.data);
       }
+
       // Cache token for 1 hour (3600 seconds)
       this._accessToken = token;
       this._accessTokenExpiry = now + 3600 * 1000;
       return token;
     } catch (error) {
-      // Improved error logging
-      if (error.response) {
-        console.error('Error getting access token:', error.response.status, error.response.data);
-      } else {
-        console.error('Error getting access token:', error.message || error);
-      }
+      console.error('[MPESA DEBUG] Error getting access token. Status:', error.response?.status);
+      console.error('[MPESA DEBUG] Error data:', error.response?.data);
+      console.error('[MPESA DEBUG] Full error:', error);
       throw new Error('Failed to get M-Pesa access token');
     }
   }
@@ -80,13 +85,26 @@ class MpesaService {
 
   // Initiate STK Push
   async initiateSTKPush(phoneNumber, amount, packageId, packageName) {
+    console.log(`[MPESA DEBUG] Initiating STK Push for phone: ${phoneNumber}, amount: ${amount}, package: ${packageName} (ID: ${packageId})`);
     try {
       const accessToken = await this.getAccessToken();
+      if (!accessToken) {
+        console.error('[MPESA DEBUG] STK Push failed: Could not retrieve access token.');
+        throw new Error('Could not retrieve access token for STK Push.');
+      }
+      console.log('[MPESA DEBUG] Access token retrieved for STK Push.');
+
       const timestamp = this.getTimestamp();
       const password = this.generatePassword();
+      console.log(`[MPESA DEBUG] Timestamp: ${timestamp}`);
+      // Security: Don't log the password in production.
+      if (this.env !== 'production') {
+          console.log(`[MPESA DEBUG] Generated Password: ${password}`);
+      }
 
       // Format phone number (ensure it starts with 254)
       const formattedPhone = phoneNumber.startsWith('254') ? phoneNumber : `254${phoneNumber.replace(/^0/, '')}`;
+      console.log(`[MPESA DEBUG] Formatted Phone Number: ${formattedPhone}`);
 
       const payload = {
         BusinessShortCode: this.shortcode,
@@ -102,8 +120,7 @@ class MpesaService {
         TransactionDesc: `Payment for ${packageName} package`
       };
 
-      // Debug: Log the generated CallBackURL
-      console.log('[MPESA][DEBUG] Generated CallBackURL:', payload.CallBackURL);
+      console.log('[MPESA DEBUG] STK Push Payload:', JSON.stringify(payload, null, 2));
 
       const response = await axios.post(
         `${this.baseUrl}/mpesa/stkpush/v1/processrequest`,
@@ -116,15 +133,22 @@ class MpesaService {
         }
       );
 
+      console.log('[MPESA DEBUG] STK Push API Response:', JSON.stringify(response.data, null, 2));
+
       // Store the checkout request ID for status checking
       const checkoutRequestId = response.data.CheckoutRequestID;
-      await this.storePaymentRequest(checkoutRequestId, {
-        packageId,
-        amount,
-        phoneNumber: formattedPhone,
-        timestamp,
-        status: 'pending'
-      });
+      if (checkoutRequestId) {
+        console.log(`[MPESA DEBUG] Storing payment request with CheckoutRequestID: ${checkoutRequestId}`);
+        await this.storePaymentRequest(checkoutRequestId, {
+          packageId,
+          amount,
+          phoneNumber: formattedPhone,
+          timestamp,
+          status: 'pending'
+        });
+      } else {
+        console.warn('[MPESA DEBUG] No CheckoutRequestID received in STK Push response.');
+      }
 
       return {
         success: true,
@@ -132,7 +156,15 @@ class MpesaService {
         message: 'STK Push initiated successfully'
       };
     } catch (error) {
-      console.error('STK Push initiation error:', error.response?.data || error);
+      console.error('[MPESA DEBUG] STK Push initiation failed.');
+      if (error.response) {
+        console.error('[MPESA DEBUG] Error status:', error.response.status);
+        console.error('[MPESA DEBUG] Error headers:', JSON.stringify(error.response.headers, null, 2));
+        console.error('[MPESA DEBUG] Error data:', JSON.stringify(error.response.data, null, 2));
+      } else {
+        console.error('[MPESA DEBUG] Error message:', error.message);
+      }
+      console.error('[MPESA DEBUG] Full error object:', error);
       throw new Error(error.response?.data?.errorMessage || 'Failed to initiate payment');
     }
   }
@@ -220,12 +252,17 @@ class MpesaService {
 
   // Handle M-Pesa callback
   async handleCallback(callbackData) {
+    console.log('[MPESA DEBUG] Received M-Pesa callback.');
+    console.log('[MPESA DEBUG] Callback data:', JSON.stringify(callbackData, null, 2));
     try {
       const { Body: { stkCallback: { CheckoutRequestID, ResultCode, ResultDesc, CallbackMetadata } } } = callbackData;
       
+      console.log(`[MPESA DEBUG] Callback details - CheckoutRequestID: ${CheckoutRequestID}, ResultCode: ${ResultCode}, ResultDesc: ${ResultDesc}`);
+
       let status = 'failed';
       if (ResultCode === 0 && CallbackMetadata) {
         status = 'success';
+        console.log('[MPESA DEBUG] Callback indicates successful payment.');
         // Store transaction details
         const transactionData = {
           checkoutRequestId: CheckoutRequestID,
@@ -234,13 +271,20 @@ class MpesaService {
           amount: CallbackMetadata.Item.find(item => item.Name === 'Amount')?.Value,
           phoneNumber: CallbackMetadata.Item.find(item => item.Name === 'PhoneNumber')?.Value
         };
+        console.log('[MPESA DEBUG] Storing transaction details:', JSON.stringify(transactionData, null, 2));
         await this.storeTransactionDetails(transactionData);
+      } else {
+        console.log(`[MPESA DEBUG] Callback indicates failed or cancelled payment. ResultCode: ${ResultCode}`);
       }
 
+      console.log(`[MPESA DEBUG] Updating payment status to '${status}' for CheckoutRequestID: ${CheckoutRequestID}`);
       await this.updatePaymentStatus(CheckoutRequestID, status);
       return { success: true };
     } catch (error) {
-      console.error('Callback handling error:', error);
+      console.error('[MPESA DEBUG] Callback handling error.');
+      console.error('[MPESA DEBUG] Full error object:', error);
+      // It's possible callbackData structure is not as expected.
+      console.error('[MPESA DEBUG] Original callback data that caused error:', JSON.stringify(callbackData, null, 2));
       throw new Error('Failed to process callback');
     }
   }
