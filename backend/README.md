@@ -1,290 +1,109 @@
 # Themabinti Backend
 
-Node.js/Express backend for the Themabinti Services Hub platform with MongoDB and M-Pesa integration.
+Node.js/Express backend for the Themabinti Services Hub platform with MongoDB, PostgreSQL, and M-Pesa integration.
 
-## Features
+## ✨ Features
 
-- **User Authentication**: JWT-based auth with bcrypt password hashing
-- **M-Pesa Integration**: STK Push for seller package payments
-- **Service Management**: CRUD operations for services
-- **Appointment System**: Booking and management
-- **Admin Dashboard**: Complete platform management
-- **File Upload**: Base64 image/video handling
-- **Payment Tracking**: PostgreSQL database for payment records
+- **User Authentication**: JWT-based, bcrypt password hashing
+- **Seller Package Upgrades**: Upgrade seller tier anytime (M-Pesa STK Push)
+- **M-Pesa Integration**: STK Push for registration and upgrades
+- **Service Management**: CRUD for services
+- **Appointment System**: Bookings and management
+- **Admin Dashboard**: Full platform management
+- **Payment Tracking**: PostgreSQL for M-Pesa payments
 
-## Technology Stack
+## 🛠️ Technology Stack
 
-- Node.js with Express.js
-- MongoDB with Mongoose ODM
-- PostgreSQL for payment tracking
-- JWT for authentication
-- bcryptjs for password hashing
+- Node.js + Express.js
+- MongoDB (Mongoose)
+- PostgreSQL
+- JWT, bcryptjs
 - M-Pesa STK Push API
-- Axios for external API calls
+- Axios
 
-## Installation
+## 🚀 Getting Started
 
+### Prerequisites
+- Node.js (v18+)
+- MongoDB database
+- PostgreSQL database
+- M-Pesa developer account
+
+### Setup
 ```bash
-# Install dependencies
+cd backend
 npm install
-
-# Set up environment variables
-cp .env.example .env
-# Edit .env with your configuration
-
-# Start development server
+cp .env.example .env # then edit .env with your config
 npm run dev
-
-# Start production server
-npm start
 ```
 
-## Environment Variables
+### Environment Variables
+See `.env.example` for all required variables:
+- `MONGO_URI`, `DATABASE_URL`, `JWT_SECRET`, `MPESA_CONSUMER_KEY`, `MPESA_CONSUMER_SECRET`, `MPESA_PASSKEY`, `MPESA_SHORTCODE`, `BASE_URL`, etc.
 
-```env
-# Database Configuration
-MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/themabinti
-DATABASE_URL=postgresql://username:password@hostname:port/database_name
+## 🔧 API Endpoints (Highlights)
 
-# JWT Secret
-JWT_SECRET=your_jwt_secret_key_here
-
-# M-Pesa Configuration
-MPESA_CONSUMER_KEY=your_mpesa_consumer_key
-MPESA_CONSUMER_SECRET=your_mpesa_consumer_secret
-MPESA_PASSKEY=your_mpesa_passkey
-MPESA_SHORTCODE=174379
-MPESA_ENVIRONMENT=sandbox
-BASE_URL=http://localhost:5000
-
-# Server Configuration
-PORT=5000
-NODE_ENV=development
-```
-
-## API Endpoints
-
-### Authentication
-- `POST /api/register` - User registration
-- `POST /api/login` - User login
-- `POST /api/complete-seller-registration` - Complete seller registration after payment
+- `POST /api/register` - User registration (with M-Pesa for sellers)
+- `POST /api/upgrade-seller-package` - Initiate seller package upgrade (STK Push)
+- `POST /api/complete-seller-upgrade` - Complete upgrade after payment
 - `GET /api/payment-status/:checkoutRequestId` - Check payment status
-
-### Services
-- `GET /api/services` - Get all services
-- `POST /api/services` - Create new service (authenticated sellers)
-- `GET /api/services/:category` - Get services by category
-- `GET /api/services/search` - Search services
-- `GET /api/service/:id` - Get single service
-- `GET /api/subcategory` - Get services by subcategory
-
-### Appointments
+- `POST /api/services` - Create new service (sellers)
 - `POST /api/appointments` - Book appointment
-- `GET /api/appointments/user/:userId` - Get user appointments
-- `GET /api/appointments/service/:serviceId` - Get service appointments
-- `PATCH /api/appointments/:id/status` - Update appointment status
-
-### M-Pesa Payments
-- `POST /api/mpesa/initiate` - Initiate STK Push
+- `POST /api/mpesa/initiate` - Initiate M-Pesa payment
 - `POST /api/mpesa/callback` - M-Pesa callback handler
-- `GET /api/mpesa/status/:packageId` - Check payment status
-
-### Admin
 - `POST /api/admin/login` - Admin login
-- `POST /api/admin/create-initial` - Create initial admin
-- `GET /api/admin/dashboard/stats` - Dashboard statistics
-- `GET /api/admin/users` - Get all users
-- `GET /api/admin/services` - Get all services
-- `GET /api/admin/appointments` - Get all appointments
-- `GET /api/admin/payments` - Get all payments
-- `GET /api/admin/contacts` - Get all contacts
-- `PATCH /api/admin/appointments/:id/status` - Update appointment status
-- `DELETE /api/admin/services/:id` - Delete service
-- `DELETE /api/admin/users/:id` - Delete user
 
-### Contact & Blogs
-- `POST /api/contact` - Submit contact form
-- `GET /api/blogs` - Get all blogs
-- `POST /api/blogs` - Create blog post
-- `GET /api/blogs/:id` - Get single blog
+## 💳 M-Pesa Integration
 
-## Database Schema
+- **STK Push** for seller registration and upgrades
+- **Callback** for real-time payment status
+- **Upgrade Flow**: Sellers can upgrade from Basic → Standard → Premium anytime
 
-### MongoDB Collections
+## 🛡️ Security
 
-#### Users
-```javascript
-{
-  userName: String,
-  email: String (unique),
-  password: String (hashed),
-  phoneNumber: String,
-  accountType: 'buyer' | 'seller',
-  sellerPackage: {
-    packageId: 'basic' | 'standard' | 'premium',
-    photoUploads: Number,
-    videoUploads: Number
-  },
-  createdAt: Date
-}
-```
-
-#### Services
-```javascript
-{
-  userId: ObjectId (ref: User),
-  name: String,
-  media: [{
-    type: 'image' | 'video',
-    data: String (base64)
-  }],
-  minPrice: Number,
-  maxPrice: Number,
-  location: String,
-  phoneNumber: String,
-  category: String,
-  subcategory: String,
-  description: String,
-  createdAt: Date
-}
-```
-
-#### Appointments
-```javascript
-{
-  serviceId: ObjectId (ref: Service),
-  userId: ObjectId (ref: User),
-  name: String,
-  email: String,
-  date: Date,
-  time: String,
-  message: String,
-  status: 'pending' | 'confirmed' | 'cancelled',
-  createdAt: Date
-}
-```
-
-### PostgreSQL Tables
-
-#### mpesa_payments
-```sql
-CREATE TABLE mpesa_payments (
-  id SERIAL PRIMARY KEY,
-  checkout_request_id VARCHAR(255) NOT NULL UNIQUE,
-  package_id VARCHAR(50) NOT NULL,
-  amount DECIMAL(10,2) NOT NULL,
-  phone_number VARCHAR(15) NOT NULL,
-  timestamp VARCHAR(14) NOT NULL,
-  status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'success', 'failed')),
-  mpesa_receipt_number VARCHAR(255),
-  transaction_date VARCHAR(14),
-  transaction_amount DECIMAL(10,2),
-  user_id VARCHAR(255),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
-
-## M-Pesa Integration
-
-### STK Push Flow
-1. User selects seller package
-2. Backend initiates STK Push request
-3. User receives prompt on phone
-4. User enters M-Pesa PIN
-5. M-Pesa sends callback to backend
-6. Backend updates payment status
-7. Registration completes on successful payment
-
-### Callback Handling
-- Endpoint: `POST /api/mpesa/callback`
-- Validates M-Pesa response
-- Updates payment status in database
-- Handles success/failure scenarios
-
-## Security
-
-- JWT tokens for authentication
-- Password hashing with bcryptjs
-- Input validation and sanitization
-- CORS configuration
-- Environment variable protection
+- JWT authentication
+- Password hashing (bcryptjs)
+- Input validation (Zod)
 - SQL injection prevention
+- CORS configuration
+- Admin-only route protection
 
-## Error Handling
+## 🏗️ Development Workflow
 
-- Centralized error handling middleware
-- Detailed error logging
-- User-friendly error messages
-- Proper HTTP status codes
+- `npm run dev` (with nodemon)
+- `npm start` (production)
+- PostgreSQL tables are auto-created on first run
 
-## Development
+## 🗄️ Database Schema
 
+- **MongoDB**: Users, Services, Appointments, etc.
+- **PostgreSQL**: `mpesa_payments` table for payment tracking
+
+## 🧪 Testing
 ```bash
-# Start with nodemon for auto-restart
-npm run dev
-
-# Run in production mode
-npm start
-
-# Database initialization
-# PostgreSQL tables are created automatically on first run
-```
-
-## Testing
-
-```bash
-# Test M-Pesa integration (sandbox)
 curl -X POST http://localhost:5000/api/mpesa/initiate \
   -H "Content-Type: application/json" \
-  -d '{
-    "amount": 800,
-    "phoneNumber": "254712345678",
-    "packageId": "basic",
-    "packageName": "Basic Package"
-  }'
+  -d '{"amount": 1000, "phoneNumber": "2547XXXXXXXX", "packageId": "basic", "packageName": "Basic Package"}'
 ```
 
-## Deployment
+## 🌐 Deployment
 
-### Environment Setup
-1. Set up MongoDB database
-2. Set up PostgreSQL database
-3. Configure M-Pesa credentials
-4. Set environment variables
-5. Deploy to hosting platform
+- **Render** (recommended)
+- **Heroku**, **Railway**, **DigitalOcean**, **AWS**
+- See [RENDER_DEPLOYMENT.md](../RENDER_DEPLOYMENT.md)
 
-### Production Considerations
-- Use production M-Pesa credentials
-- Enable HTTPS
-- Set up proper logging
-- Configure database backups
-- Set up monitoring
-- Use PostgreSQL for better Render compatibility
+## 🤝 Contributing
 
-## 🌐 Render Deployment
+1. Follow code structure and naming conventions
+2. Add error handling and input validation
+3. Write clear documentation
+4. Test thoroughly before submitting
+5. Open a Pull Request
 
-This backend is optimized for deployment on Render:
+## 📄 License
 
-1. **PostgreSQL Integration**: Uses `pg` driver for better Render compatibility
-2. **Environment Variables**: Configured for Render's environment
-3. **Auto-scaling**: Supports Render's auto-scaling features
-4. **Health Checks**: Built-in health endpoints for monitoring
+MIT License
 
-See [RENDER_DEPLOYMENT.md](../RENDER_DEPLOYMENT.md) for complete deployment instructions.
+## 📞 Support
 
-## Contributing
-
-1. Follow existing code structure
-2. Add proper error handling
-3. Include input validation
-4. Write clear documentation
-5. Test thoroughly before submitting
-
-## Support
-
-For issues or questions:
-- Check the logs for detailed error messages
-- Verify environment variables are set correctly
-- Ensure databases are accessible
-- Test M-Pesa credentials in sandbox first
+Email: themabintionline@gmail.com or open an issue.

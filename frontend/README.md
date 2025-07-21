@@ -8,25 +8,104 @@ React-based frontend for the Themabinti Services Hub platform.
 
 **URL**: https://lovable.dev/projects/ae5c546a-b40e-4008-9f44-7f9d0d420780
 
-## Features
+## ✨ Features
 
-- **Service Discovery**: Browse and search for services
-- **User Authentication**: Login/register with different account types
-- **M-Pesa Integration**: Seamless payment processing for sellers
-- **Responsive Design**: Mobile-first approach
-- **Admin Dashboard**: Comprehensive management interface
-- **Appointment Booking**: Direct booking with service providers
+- **Service Discovery**: Browse/search by category, location, subcategory
+- **User Authentication**: Login/register (buyer/seller)
+- **Seller Package Upgrades**: Upgrade seller tier anytime (M-Pesa STK Push)
+- **M-Pesa Integration**: Seamless payment for registration and upgrades
+- **Admin Dashboard**: Full management interface
+- **Appointment Booking**: Book with providers directly
+- **Mobile-First Design**: Fully responsive, modern UI
 
-## Technology Stack
+## 🛠️ Technology Stack
 
-- React 18 with TypeScript
-- Vite for development and building
-- Tailwind CSS for styling
-- shadcn/ui for UI components
-- React Router for navigation
-- React Hook Form with Zod validation
-- Axios for API communication
-- Sonner for notifications
+- React 18 + TypeScript
+- Vite
+- Tailwind CSS
+- shadcn/ui
+- React Router
+- React Hook Form + Zod
+- Axios
+- Sonner (notifications)
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js (v18+)
+- Backend API running (see backend/README.md)
+
+### Setup
+```bash
+# Clone the repo
+cd frontend
+npm install
+
+# Start development server
+npm run dev
+```
+
+### Environment Variables
+- The frontend connects to the backend API.
+- Update the API base URL in `src/config/api.ts` if needed.
+
+## 🗂️ Key Components
+
+- `SignInForm.tsx` / `SignUpForm.tsx` - Auth flows (with M-Pesa for sellers)
+- `SellerAccountPage.tsx` - Seller dashboard, package upgrades
+- `SellerPackages.tsx` - Package selection
+- `ServiceCard.tsx` / `ServiceCategorySection.tsx` - Service display
+- `PostServiceForm.tsx` - Create/edit services
+- `AdminDashboard.tsx` - Admin management
+- `BookAppointmentDialog.tsx` - Booking interface
+
+## 🧭 Routing
+
+- `/` - Homepage
+- `/signin` - User login
+- `/signup-options` - Account type selection
+- `/signup` - User registration
+- `/seller-packages` - Package selection
+- `/account` - Seller account & upgrades
+- `/post-service` - Create service (sellers)
+- `/service/:id` - Service details
+- `/admin` - Admin dashboard
+- `/search` - Search results
+- `/services/:category/:subcategory` - Category services
+
+## 💳 Seller Upgrade Flow
+
+- Sellers can upgrade from Basic → Standard → Premium anytime from `/account`
+- Initiates M-Pesa STK Push for upgrade
+- UI polls for payment and updates package on success
+
+## 🛡️ Best Practices
+
+- Fully responsive (mobile, tablet, desktop)
+- Accessible, modern UI
+- TypeScript for type safety
+- Organized by feature/component
+
+## 🏗️ Build & Deploy
+```bash
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+```
+- Deploy the `dist` folder to your static hosting provider
+- Ensure backend API is accessible from your domain
+
+## 🤝 Contributing
+1. Follow code structure and naming conventions
+2. Use TypeScript
+3. Test on multiple screen sizes
+4. Ensure accessibility
+5. Open a Pull Request
+
+## 📄 License
+MIT License
 
 ## How can I edit this code?
 
