@@ -174,7 +174,6 @@ const ServiceDetail = () => {
             <Tabs defaultValue="gallery" className="mb-8">
               <TabsList className="mb-4">
                 <TabsTrigger value="gallery">Gallery</TabsTrigger>
-                <TabsTrigger value="description">Description</TabsTrigger>
               </TabsList>
               
               <TabsContent value="gallery">
@@ -209,23 +208,6 @@ const ServiceDetail = () => {
                     </div>
                   )}
                 </div>
-              </TabsContent>
-              
-              <TabsContent value="description">
-                <Card>
-                  <CardContent className="p-6">
-                    <h3 className="text-xl font-semibold mb-4">Service Description</h3>
-                    <p className="text-gray-700 mb-4">
-                      {service.name} provides exceptional service in {service.location}. Our team of experienced professionals ensures top-quality results tailored to your specific needs.
-                    </p>
-                    <p className="text-gray-700 mb-4">
-                      We specialize in {service.subcategory} services with years of expertise in the field. Our clients trust us for our attention to detail, professionalism, and commitment to excellence.
-                    </p>
-                    <p className="text-gray-700">
-                      Whether you're looking for a one-time service or regular appointments, we offer flexible scheduling options to accommodate your needs. Contact us today to book your appointment!
-                    </p>
-                  </CardContent>
-                </Card>
               </TabsContent>
             </Tabs>
           </div>
