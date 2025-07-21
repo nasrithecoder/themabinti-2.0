@@ -44,10 +44,12 @@ const validSubcategories = {
     '/services/hair/complete-care',
   ],
   health: [
+    '/services/health/dental',
     '/services/health/skin-consultation',
-    '/services/health/mental-health',
+    '/services/health/reproductive',
     '/services/health/maternal-care',
-    '/services/health/reproductive-care',
+    '/services/health/paediatrician',
+    '/services/health/mental',
   ],
   fitness: [
     '/services/fitness/gym',
