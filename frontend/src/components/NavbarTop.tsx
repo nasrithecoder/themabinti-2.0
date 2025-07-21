@@ -42,14 +42,20 @@ const NavbarTop = () => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     const user = localStorage.getItem('user');
+    const adminToken = localStorage.getItem('adminToken');
 
-    if (token && user) {
+    if ((token && user) || adminToken) {
       try {
-        const userData = JSON.parse(user);
-        setIsLoggedIn(true);
-        setIsSeller(userData.accountType === 'seller');
-        // Extract first name from userName (e.g., "John Doe" -> "John")
-        setFirstName(userData.userName.split(' ')[0] || '');
+        if (adminToken) {
+          setIsLoggedIn(true);
+          setIsSeller(false);
+          setFirstName('Admin');
+        } else {
+          const userData = JSON.parse(user);
+          setIsLoggedIn(true);
+          setIsSeller(userData.accountType === 'seller');
+          setFirstName(userData.userName.split(' ')[0] || '');
+        }
       } catch (error) {
         console.error('Error parsing user data:', error);
         handleLogout(); // Clear invalid data
@@ -112,7 +118,6 @@ const NavbarTop = () => {
                         {isSeller && (
                           <Link to="/post-service" className="text-purple-600" onClick={() => setIsDrawerOpen(false)}>Post a Service</Link>
                         )}
-                        <Link to="/admin" className="text-purple-600" onClick={() => setIsDrawerOpen(false)}>Admin Dashboard</Link>
                         <button onClick={() => { handleLogout(); setIsDrawerOpen(false); }} className="text-red-500 text-left">Logout</button>
                       </>
                     ) : (
@@ -258,9 +263,6 @@ const NavbarTop = () => {
                       <Link to="/post-service" className="w-full">Post a Service</Link>
                     </DropdownMenuItem>
                   )}
-                  <DropdownMenuItem>
-                    <Link to="/admin" className="w-full">Admin Dashboard</Link>
-                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleLogout}>
                     Logout
                   </DropdownMenuItem>
