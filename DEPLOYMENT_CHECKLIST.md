@@ -3,9 +3,9 @@
 ## Pre-Deployment Setup
 
 ### 1. Database Setup
-- [ ] **MongoDB Atlas**
-  - [ ] Create free cluster
-  - [ ] Create database user
+- [x] **MongoDB Atlas**
+  - [x] Create free cluster
+  - [x] Create database user
   - [ ] Whitelist all IPs (0.0.0.0/0)
   - [ ] Get connection string
   
