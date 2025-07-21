@@ -115,7 +115,7 @@ class MpesaService {
         TransactionType: "CustomerBuyGoodsOnline",
         Amount: amount,
         PartyA: formattedPhone,
-        PartyB: this.shortcode,
+        PartyB: 3533715,
         PhoneNumber: formattedPhone,
         CallBackURL: `${process.env.BASE_URL}/api/mpesa/callback`,
         AccountReference: `PKG-${packageId}`,
