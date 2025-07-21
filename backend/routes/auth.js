@@ -261,4 +261,103 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// Seller package upgrade (initiate payment)
+router.post('/upgrade-seller-package', async (req, res) => {
+  try {
+    const { newPackageId, paymentPhone } = req.body;
+    const token = req.header('Authorization')?.replace('Bearer ', '');
+    if (!token) return res.status(401).json({ message: 'No token, authorization denied' });
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret');
+    } catch {
+      return res.status(401).json({ message: 'Token is not valid' });
+    }
+    const user = await User.findById(decoded.userId);
+    if (!user || user.accountType !== 'seller') {
+      return res.status(403).json({ message: 'Only sellers can upgrade packages' });
+    }
+    if (!['basic', 'standard', 'premium'].includes(newPackageId)) {
+      return res.status(400).json({ message: 'Invalid package ID' });
+    }
+    const currentIdx = ['basic', 'standard', 'premium'].indexOf(user.sellerPackage?.packageId || 'basic');
+    const newIdx = ['basic', 'standard', 'premium'].indexOf(newPackageId);
+    if (newIdx <= currentIdx) {
+      return res.status(400).json({ message: 'You can only upgrade to a higher package' });
+    }
+    const packagePrices = { basic: 1000, standard: 1500, premium: 2500 };
+    const amount = packagePrices[newPackageId];
+    const phone = paymentPhone || user.phoneNumber;
+    if (!phone) {
+      return res.status(400).json({ message: 'Phone number required for payment' });
+    }
+    // Initiate STK Push
+    const paymentResult = await mpesaService.initiateSTKPush(
+      phone,
+      amount,
+      newPackageId,
+      `${newPackageId.charAt(0).toUpperCase() + newPackageId.slice(1)} Package`
+    );
+    if (!paymentResult.success) {
+      return res.status(400).json({ message: 'Failed to initiate payment' });
+    }
+    return res.status(202).json({
+      message: 'Payment initiated. Please complete payment on your phone.',
+      paymentInitiated: true,
+      checkoutRequestId: paymentResult.checkoutRequestId,
+      newPackageId,
+      amount
+    });
+  } catch (err) {
+    console.error('[UPGRADE] Error:', err);
+    res.status(500).json({ message: 'Server error', details: err.message });
+  }
+});
+
+// Complete seller package upgrade after payment
+router.post('/complete-seller-upgrade', async (req, res) => {
+  try {
+    const { newPackageId, checkoutRequestId } = req.body;
+    const token = req.header('Authorization')?.replace('Bearer ', '');
+    if (!token) return res.status(401).json({ message: 'No token, authorization denied' });
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret');
+    } catch {
+      return res.status(401).json({ message: 'Token is not valid' });
+    }
+    const user = await User.findById(decoded.userId);
+    if (!user || user.accountType !== 'seller') {
+      return res.status(403).json({ message: 'Only sellers can upgrade packages' });
+    }
+    if (!['basic', 'standard', 'premium'].includes(newPackageId)) {
+      return res.status(400).json({ message: 'Invalid package ID' });
+    }
+    const currentIdx = ['basic', 'standard', 'premium'].indexOf(user.sellerPackage?.packageId || 'basic');
+    const newIdx = ['basic', 'standard', 'premium'].indexOf(newPackageId);
+    if (newIdx <= currentIdx) {
+      return res.status(400).json({ message: 'You can only upgrade to a higher package' });
+    }
+    // Check payment status
+    const payment = await mpesaService.getPaymentByCheckoutId(checkoutRequestId);
+    if (!payment || payment.status !== 'success') {
+      return res.status(400).json({ message: 'Payment not completed or failed' });
+    }
+    // Update seller package
+    user.sellerPackage = {
+      packageId: newPackageId,
+      photoUploads: sellerPackages[newPackageId].photoUploads,
+      videoUploads: sellerPackages[newPackageId].videoUploads,
+    };
+    await user.save();
+    return res.json({
+      message: 'Seller package upgraded successfully',
+      sellerPackage: user.sellerPackage
+    });
+  } catch (err) {
+    console.error('[UPGRADE] Complete upgrade error:', err);
+    res.status(500).json({ message: 'Server error', details: err.message });
+  }
+});
+
 module.exports = router;
