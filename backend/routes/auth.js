@@ -62,7 +62,7 @@ router.post('/register', async (req, res) => {
     if (accountType === 'seller') {
       // For sellers, initiate M-Pesa payment, do NOT create user yet
       const packagePrices = {
-        basic: 800,
+        basic: 1000,
         standard: 1500,
         premium: 2500
       };

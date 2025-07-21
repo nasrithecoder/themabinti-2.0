@@ -65,11 +65,12 @@ export const serviceCategories = [
     ],
   },
   {
-    id: 'flowersAndGifts',
-    title: 'Flowers & Gifts',
+    id: 'celebrateHer',
+    title: 'Celebrate her',
     links: [
-      { path: '/services/flowers-gifts/personalized', title: 'Personalized Gifts' },
-      { path: '/services/flowers-gifts/customized', title: 'Customized Gifts' },
+      { path: '/services/celebrate-her/florist', title: 'Florist' },
+      { path: '/services/celebrate-her/decor', title: 'Décor' },
+      { path: '/services/celebrate-her/journey-to-motherhood', title: 'Journey to Motherhood' },
     ],
   },
   {
