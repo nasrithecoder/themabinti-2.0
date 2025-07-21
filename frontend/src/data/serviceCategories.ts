@@ -29,10 +29,12 @@ export const serviceCategories = [
     id: 'health',
     title: 'Health',
     links: [
+      { path: '/services/health/dental', title: 'Dental' },
       { path: '/services/health/skin-consultation', title: 'Skin Consultation' },
-      { path: '/services/health/mental-health', title: 'Mental Health' },
+      { path: '/services/health/reproductive', title: 'Reproductive' },
       { path: '/services/health/maternal-care', title: 'Maternal Care' },
-      { path: '/services/health/reproductive-care', title: 'Reproductive Care' },
+      { path: '/services/health/paediatrician', title: 'Paediatrician' },
+      { path: '/services/health/mental', title: 'Mental' },
     ],
   },
   {

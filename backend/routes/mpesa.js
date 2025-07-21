@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const mpesaService = require('../services/mpesaService');
+const mpesaRegisterUrlsService = require('../services/mpesaRegisterUrlsService');
 
 // Initiate M-Pesa payment
 router.post('/initiate', async (req, res) => {
@@ -91,6 +92,16 @@ router.post('/callback', async (req, res) => {
     console.error('Callback error:', error);
     // Still return 200 to acknowledge receipt of callback
     res.json({ success: false, message: error.message });
+  }
+});
+
+// Register C2B URLs
+router.post('/register-c2b-urls', async (req, res) => {
+  try {
+    const result = await mpesaRegisterUrlsService.registerC2BUrls();
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
