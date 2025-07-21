@@ -1,6 +1,8 @@
 # Themabinti Services Hub
 
-A modern platform connecting Kenyan women with quality beauty, health, and lifestyle services. Built with React, Node.js, MongoDB, PostgreSQL, and integrated with M-Pesa for seamless payments and seller upgrades.
+A modern, inclusive platform connecting people in Kenya with quality beauty, health, and lifestyle services. Built with React, Node.js, MongoDB, PostgreSQL, and integrated with M-Pesa for seamless payments and seller upgrades.
+
+**Themabinti welcomes both men and women—anyone can provide or book a service on the platform.**
 
 ## 🌟 Features
 

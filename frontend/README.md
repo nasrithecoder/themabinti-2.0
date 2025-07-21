@@ -4,6 +4,8 @@
 
 React-based frontend for the Themabinti Services Hub platform.
 
+**Themabinti is inclusive: both men and women can provide or book services on the platform.**
+
 ## Project info
 
 **URL**: https://lovable.dev/projects/ae5c546a-b40e-4008-9f44-7f9d0d420780

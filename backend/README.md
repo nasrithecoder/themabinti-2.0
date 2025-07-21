@@ -2,6 +2,8 @@
 
 Node.js/Express backend for the Themabinti Services Hub platform with MongoDB, PostgreSQL, and M-Pesa integration.
 
+**Themabinti is inclusive: both men and women can provide or book services on the platform.**
+
 ## ✨ Features
 
 - **User Authentication**: JWT-based, bcrypt password hashing
