@@ -8,7 +8,7 @@ const packages = [
   {
     id: 'basic',
     name: 'Basic',
-    price: 800,
+    price: 1000,
     recommended: false,
     features: [
       '1 Photo Upload',
