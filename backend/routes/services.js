@@ -79,6 +79,11 @@ const validSubcategories = {
     '/services/photography/lifestyle',
     '/services/photography/portrait',
   ],
+  celebrateHer: [
+    '/services/celebrate-her/florist',
+    '/services/celebrate-her/decor',
+    '/services/celebrate-her/journey-to-motherhood',
+  ],
 };
 
 // Post a service
