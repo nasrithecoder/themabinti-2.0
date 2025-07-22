@@ -134,6 +134,24 @@ const SellerAccountPage = () => {
     checkStatus();
   };
 
+  if (user && user.accountType !== 'seller') {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <NavbarTop />
+        <div className="flex-grow flex items-center justify-center bg-gray-50">
+          <div className="bg-white p-8 rounded-lg shadow max-w-md w-full text-center">
+            <h2 className="text-2xl font-bold mb-4">Welcome, {user.userName?.split(' ')[0] || 'User'}!</h2>
+            <p className="text-gray-700 mb-6">You are currently registered as a buyer. To offer your own services and access seller features, upgrade your account.</p>
+            <Button className="bg-purple-500 hover:bg-purple-600 text-white w-full" onClick={() => window.location.href = '/seller-packages'}>
+              Become a Seller
+            </Button>
+          </div>
+        </div>
+        <NavbarBottom />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       <NavbarTop />
