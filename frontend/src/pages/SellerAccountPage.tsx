@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const packages = [
   {
@@ -54,6 +55,7 @@ const SellerAccountPage = () => {
   const [upgradeStatus, setUpgradeStatus] = useState<'idle'|'initiated'|'checking'|'completed'|'failed'>('idle');
   const [checkoutRequestId, setCheckoutRequestId] = useState<string|null>(null);
   const [pendingUpgrade, setPendingUpgrade] = useState<string|null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const userStr = localStorage.getItem('user');
@@ -142,7 +144,7 @@ const SellerAccountPage = () => {
           <div className="bg-white p-8 rounded-lg shadow max-w-md w-full text-center">
             <h2 className="text-2xl font-bold mb-4">Welcome, {user.userName?.split(' ')[0] || 'User'}!</h2>
             <p className="text-gray-700 mb-6">You are currently registered as a buyer. To offer your own services and access seller features, upgrade your account.</p>
-            <Button className="bg-purple-500 hover:bg-purple-600 text-white w-full" onClick={() => window.location.href = '/seller-packages'}>
+            <Button className="bg-purple-500 hover:bg-purple-600 text-white w-full" onClick={() => navigate('/seller-packages')}>
               Become a Seller
             </Button>
           </div>
