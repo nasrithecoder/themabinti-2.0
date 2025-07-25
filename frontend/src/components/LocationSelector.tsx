@@ -11,12 +11,55 @@ import {
 
 const locations = [
   { id: 'all', name: 'All Locations' },
-  { id: 'nairobi', name: 'Nairobi' },
-  { id: 'nakuru', name: 'Nakuru' },
+  { id: 'mombasa', name: 'Mombasa' },
+  { id: 'kwale', name: 'Kwale' },
+  { id: 'kilifi', name: 'Kilifi' },
+  { id: 'tanariver', name: 'Tana River' },
+  { id: 'lamu', name: 'Lamu' },
+  { id: 'taitataveta', name: 'Taita‑Taveta' },
+  { id: 'garissa', name: 'Garissa' },
+  { id: 'wajir', name: 'Wajir' },
+  { id: 'mandera', name: 'Mandera' },
+  { id: 'marsabit', name: 'Marsabit' },
+  { id: 'isiolo', name: 'Isiolo' },
+  { id: 'meru', name: 'Meru' },
+  { id: 'tharakanithi', name: 'Tharaka‑Nithi' },
+  { id: 'embu', name: 'Embu' },
+  { id: 'kitui', name: 'Kitui' },
+  { id: 'machakos', name: 'Machakos' },
+  { id: 'makueni', name: 'Makueni' },
+  { id: 'nyandarua', name: 'Nyandarua' },
+  { id: 'nyeri', name: 'Nyeri' },
+  { id: 'kirinyaga', name: 'Kirinyaga' },
+  { id: 'muranga', name: 'Murang’a' },
   { id: 'kiambu', name: 'Kiambu' },
+  { id: 'turkana', name: 'Turkana' },
+  { id: 'westpokot', name: 'West Pokot' },
+  { id: 'samburu', name: 'Samburu' },
+  { id: 'transnzoia', name: 'Trans‑Nzoia' },
+  { id: 'uasin gishu'.replace(' ', ''), name: 'Uasin Gishu' }, // adjust as needed
+  { id: 'elgeyo‑marakwet'.replace('‑', ''), name: 'Elgeyo‑Marakwet' },
+  { id: 'nandi', name: 'Nandi' },
+  { id: 'baringo', name: 'Baringo' },
+  { id: 'laikipia', name: 'Laikipia' },
+  { id: 'nakuru', name: 'Nakuru' },
+  { id: 'narok', name: 'Narok' },
+  { id: 'kajiado', name: 'Kajiado' },
+  { id: 'kericho', name: 'Kericho' },
+  { id: 'bomet', name: 'Bomet' },
+  { id: 'kakamega', name: 'Kakamega' },
+  { id: 'vihiga', name: 'Vihiga' },
+  { id: 'bungoma', name: 'Bungoma' },
+  { id: 'busia', name: 'Busia' },
+  { id: 'siaya', name: 'Siaya' },
   { id: 'kisumu', name: 'Kisumu' },
-  { id: 'thika', name: 'Thika' }
+  { id: 'homabay', name: 'Homa Bay' },
+  { id: 'migori', name: 'Migori' },
+  { id: 'kisii', name: 'Kisii' },
+  { id: 'nyamira', name: 'Nyamira' },
+  { id: 'nairobi', name: 'Nairobi' }
 ];
+
 
 const LocationSelector = () => {
   const [selectedLocation, setSelectedLocation] = useState('all');
