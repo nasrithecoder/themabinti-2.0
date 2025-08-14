@@ -16,7 +16,7 @@ const BlogsPage = () => {
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        const response = await api.get('/api/blogs');
+        const response = await api.get('/blogs');
         setBlogPosts(response.data);
         setLoading(false);
       } catch (err) {

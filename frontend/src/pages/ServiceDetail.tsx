@@ -28,7 +28,7 @@ const ServiceDetail = () => {
       try {
         setLoading(true);
         console.log('Fetching service with ID:', id);
-        const response = await api.get(`/api/services/id/${id}`);
+        const response = await api.get(`/services/id/${id}`);
         console.log('API Response:', response.data);
         
         const serviceData = response.data;

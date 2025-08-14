@@ -85,10 +85,10 @@ const SellerDashboard = () => {
       const headers = { Authorization: `Bearer ${token}` };
 
       const [analyticsRes, servicesRes, appointmentsRes, earningsRes] = await Promise.all([
-        api.get('/api/seller/analytics', { headers }),
-        api.get('/api/seller/services', { headers }),
-        api.get('/api/seller/appointments', { headers }),
-        api.get('/api/seller/earnings', { headers })
+        api.get('/seller/analytics', { headers }),
+        api.get('/seller/services', { headers }),
+        api.get('/seller/appointments', { headers }),
+        api.get('/seller/earnings', { headers })
       ]);
 
       setAnalytics(analyticsRes.data.analytics);
@@ -109,7 +109,7 @@ const SellerDashboard = () => {
   const updateServiceStatus = async (serviceId: string, isActive: boolean) => {
     try {
       const token = localStorage.getItem('token');
-      await api.patch(`/api/services/${serviceId}/status`, 
+      await api.patch(`/services/${serviceId}/status`, 
         { isActive }, 
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -125,7 +125,7 @@ const SellerDashboard = () => {
 
     try {
       const token = localStorage.getItem('token');
-      await api.delete(`/api/services/${serviceId}`, {
+      await api.delete(`/services/${serviceId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success('Service deleted successfully');
@@ -138,7 +138,7 @@ const SellerDashboard = () => {
   const updateAppointmentStatus = async (appointmentId: string, status: string) => {
     try {
       const token = localStorage.getItem('token');
-      await api.patch(`/api/seller/appointments/${appointmentId}/status`,
+      await api.patch(`/seller/appointments/${appointmentId}/status`,
         { status },
         { headers: { Authorization: `Bearer ${token}` } }
       );

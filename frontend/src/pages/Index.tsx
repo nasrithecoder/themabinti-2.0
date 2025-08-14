@@ -21,7 +21,7 @@ const Index = () => {
         const categoriesWithServices = await Promise.all(
           serviceCategories.map(async (category) => {
             try {
-              const response = await api.get('/api/services', { params: { category: category.id, limit: 4 } });
+              const response = await api.get('/services', { params: { category: category.id, limit: 4 } });
               const services = response.data.map((service: any) => ({
                 id: service._id,
                 name: service.name,

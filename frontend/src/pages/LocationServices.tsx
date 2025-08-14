@@ -19,7 +19,7 @@ const LocationServices = () => {
     const fetchServicesByLocation = async () => {
       try {
         setLoading(true);
-                const response = await api.get('/services', {
+        const response = await api.get('/services', {
           params: { location: decodedLocation },
         });
 

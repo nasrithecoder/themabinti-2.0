@@ -16,7 +16,7 @@ const AllServicesPage = () => {
     const fetchServices = async () => {
       try {
         setLoading(true);
-        const response = await api.get('api/services');
+        const response = await api.get('/services');
         
         // Format the response data to match ServiceProps interface
         const formattedServices: ServiceProps[] = response.data.map((service: any) => ({

@@ -203,6 +203,7 @@ const PostServiceForm = () => {
       });
 
       const response = await api.post('/api/services', payload, {
+      const response = await api.post('/services', payload, {
         headers: {
           'Content-Type': 'application/json',
         },

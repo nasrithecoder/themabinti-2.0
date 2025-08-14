@@ -83,6 +83,7 @@ const BookAppointmentDialog = ({ open, onOpenChange, serviceId }: BookAppointmen
     
     try {
       const response = await api.post('/api/appointments', {
+      const response = await api.post('/appointments', {
         serviceId: actualServiceId || null,
         name,
         email,

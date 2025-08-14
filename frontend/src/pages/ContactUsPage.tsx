@@ -42,7 +42,7 @@ const ContactUsPage = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const apiUrl = '/api/contacts';
+      const apiUrl = '/contacts';
       console.log('Submitting form to:', apiUrl, 'with values:', values);
       await api.post(apiUrl, values);
       toast.success('Message sent successfully! We\'ll get back to you soon.');
