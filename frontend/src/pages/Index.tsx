@@ -61,14 +61,16 @@ const Index = () => {
       {/* Hero section */}
       <div className="bg-gradient-to-r from-purple-600 to-purple-400 text-white py-4">
         <div className="container mx-auto px-4 text-center">
-          <h1 className="text-2xl md:text-3xl font-bold mb-1">themabinti</h1>
-          <p className="text-sm md:text-base mb-2 max-w-2xl mx-auto">
-            Find the perfect services near you
+          <h1 className="text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-white to-purple-100 bg-clip-text text-transparent">
+            themabinti
+          </h1>
+          <p className="text-base md:text-lg mb-4 max-w-3xl mx-auto opacity-90">
+            Discover quality beauty, health & lifestyle services across Kenya
           </p>
           <Button 
             onClick={() => setBookDialogOpen(true)}
-            size="sm" 
-            className="bg-white text-purple-700 hover:bg-gray-100"
+            size="lg" 
+            className="bg-white text-purple-700 hover:bg-gray-100 shadow-lg hover:shadow-xl transition-all duration-300"
           >
             <Book className="mr-1 h-4 w-4" />
             Book an Appointment
@@ -77,16 +79,29 @@ const Index = () => {
       </div>
       
       {/* Main content */}
-      <main className="flex-grow container mx-auto px-4 py-8">
+      <main className="flex-grow container mx-auto px-4 py-12">
+        {loading ? (
+          <div className="flex justify-center items-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+          </div>
+        ) : error ? (
+          <div className="text-center py-20">
+            <p className="text-red-500 mb-4">{error}</p>
+            <Button onClick={() => window.location.reload()}>
+              Try Again
+            </Button>
+          </div>
+        ) : (
         {/* Service Categories */}
-        {servicesByCategory.map((category) => (
+        servicesByCategory.map((category) => (
           <ServiceCategorySection
             key={category.id}
             title={category.title}
             categoryId={category.id}
             services={category.services}
           />
-        ))}
+        ))
+        )}
       </main>
       
       {/* Footer */}

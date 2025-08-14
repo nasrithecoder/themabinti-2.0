@@ -65,11 +65,11 @@ const SignUpForm = () => {
 
     const checkStatus = async () => {
       try {
-        const response = await axios.get(`https://themabinti-main-d4az.onrender.com/api/payment-status/${checkoutId}`);
+        const response = await axios.get(`https://themabinti-main-d4az.onrender.com/api/auth/payment-status/${checkoutId}`);
         
         if (response.data.status === 'success') {
           // Complete registration
-          const completeResponse = await axios.post('https://themabinti-main-d4az.onrender.com/api/complete-seller-registration', {
+          const completeResponse = await axios.post('https://themabinti-main-d4az.onrender.com/api/auth/complete-seller-registration', {
             ...sellerData,
             checkoutRequestId: checkoutId,
             packageId
@@ -142,7 +142,7 @@ const SignUpForm = () => {
       console.log('Sending register request:', userData); // Debug log
 
       // Send POST request to backend
-      const response = await axios.post('https://themabinti-main-d4az.onrender.com/api/register', userData);
+      const response = await axios.post('https://themabinti-main-d4az.onrender.com/api/auth/register', userData);
       console.log('Registration response:', response.data); // Debug log
       if (response.data.paymentInitiated) {
         // For sellers, handle payment flow
