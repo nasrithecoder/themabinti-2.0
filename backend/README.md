@@ -1,6 +1,6 @@
 # Themabinti Backend
 
-Node.js/Express backend for the Themabinti Services Hub platform with MongoDB, PostgreSQL, and M-Pesa integration.
+Node.js/Express backend for the Themabinti Services Hub platform with PostgreSQL and M-Pesa integration.
 
 **Themabinti is inclusive: both men and women can provide or book services on the platform.**
 
@@ -13,11 +13,12 @@ Node.js/Express backend for the Themabinti Services Hub platform with MongoDB, P
 - **Appointment System**: Bookings and management
 - **Admin Dashboard**: Full platform management
 - **Payment Tracking**: PostgreSQL for M-Pesa payments
+- **Advanced Analytics**: Detailed analytics for admins and sellers.
+- **Row Level Security**: PostgreSQL RLS for enhanced data security.
 
 ## 🛠️ Technology Stack
 
 - Node.js + Express.js
-- MongoDB (Mongoose)
 - PostgreSQL
 - JWT, bcryptjs
 - M-Pesa STK Push API
@@ -27,7 +28,6 @@ Node.js/Express backend for the Themabinti Services Hub platform with MongoDB, P
 
 ### Prerequisites
 - Node.js (v18+)
-- MongoDB database
 - PostgreSQL database
 - M-Pesa developer account
 
@@ -41,7 +41,7 @@ npm run dev
 
 ### Environment Variables
 See `.env.example` for all required variables:
-- `MONGO_URI`, `DATABASE_URL`, `JWT_SECRET`, `MPESA_CONSUMER_KEY`, `MPESA_CONSUMER_SECRET`, `MPESA_PASSKEY`, `MPESA_SHORTCODE`, `BASE_URL`, etc.
+- `DATABASE_URL`, `JWT_SECRET`, `MPESA_CONSUMER_KEY`, `MPESA_CONSUMER_SECRET`, `MPESA_PASSKEY`, `MPESA_SHORTCODE`, `BASE_URL`, etc.
 
 ## 🔧 API Endpoints (Highlights)
 
@@ -65,21 +65,20 @@ See `.env.example` for all required variables:
 
 - JWT authentication
 - Password hashing (bcryptjs)
-- Input validation (Zod)
-- SQL injection prevention
+- SQL injection prevention with parameterized queries
 - CORS configuration
 - Admin-only route protection
+- PostgreSQL Row Level Security (RLS)
 
 ## 🏗️ Development Workflow
 
 - `npm run dev` (with nodemon)
 - `npm start` (production)
-- PostgreSQL tables are auto-created on first run
+- The database schema is managed via migrations. See the `migrations` directory.
 
 ## 🗄️ Database Schema
 
-- **MongoDB**: Users, Services, Appointments, etc.
-- **PostgreSQL**: `mpesa_payments` table for payment tracking
+The database schema is defined in the `backend/migrations` directory. It includes tables for users, services, appointments, payments, contacts, blogs, and admins. The schema is well-structured and includes indexes for performance and triggers for automation.
 
 ## 🧪 Testing
 ```bash

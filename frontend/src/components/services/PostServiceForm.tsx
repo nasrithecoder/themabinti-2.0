@@ -202,7 +202,7 @@ const PostServiceForm = () => {
         description: payload.description,
       });
 
-      const response = await axios.post('https://themabinti-main-d4az.onrender.com/api/services', payload, {
+      const response = await api.post('/api/services', payload, {
         headers: {
           'Content-Type': 'application/json',
         },

@@ -17,6 +17,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { Mail, MapPin, Phone } from 'lucide-react';
+import api from '@/config/api';
 import axios from 'axios';
 
 const formSchema = z.object({
@@ -41,9 +42,9 @@ const ContactUsPage = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const apiUrl = 'https://themabinti-main-d4az.onrender.com/api/contact';
+      const apiUrl = '/api/contacts';
       console.log('Submitting form to:', apiUrl, 'with values:', values);
-      await axios.post(apiUrl, values);
+      await api.post(apiUrl, values);
       toast.success('Message sent successfully! We\'ll get back to you soon.');
       form.reset();
     } catch (err: any) {

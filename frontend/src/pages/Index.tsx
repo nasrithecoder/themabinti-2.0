@@ -21,7 +21,7 @@ const Index = () => {
         const categoriesWithServices = await Promise.all(
           serviceCategories.map(async (category) => {
             try {
-              const response = await api.get(`/api/services/${category.id}`);
+              const response = await api.get('/api/services', { params: { category: category.id, limit: 4 } });
               const services = response.data.map((service: any) => ({
                 id: service._id,
                 name: service.name,
@@ -92,15 +92,17 @@ const Index = () => {
             </Button>
           </div>
         ) : (
-        {/* Service Categories */}
-        servicesByCategory.map((category) => (
-          <ServiceCategorySection
-            key={category.id}
-            title={category.title}
-            categoryId={category.id}
-            services={category.services}
-          />
-        ))
+          <div>
+            {/* Service Categories */}
+            {servicesByCategory.map((category) => (
+              <ServiceCategorySection
+                key={category.id}
+                title={category.title}
+                categoryId={category.id}
+                services={category.services}
+              />
+            ))}
+          </div>
         )}
       </main>
       

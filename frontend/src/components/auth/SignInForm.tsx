@@ -16,7 +16,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
+import api from '@/config/api';
 
 const formSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -42,7 +43,7 @@ const SignInForm = () => {
 
     try {
       // Send login request to backend
-      const response = await axios.post('https://themabinti-main-d4az.onrender.com/api/auth/login', {
+      const response = await api.post('/auth/login', {
         email: values.email,
         password: values.password,
       });
@@ -55,7 +56,7 @@ const SignInForm = () => {
 
       toast.success('Successfully signed in!');
       navigate('/');
-    } catch (error: any) {
+    } catch (error: AxiosError) {
       console.error('Signin error:', error);
       const message = error.response?.data?.message || 'Failed to sign in. Please check your credentials.';
       toast.error(message);

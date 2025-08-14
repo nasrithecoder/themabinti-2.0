@@ -143,6 +143,7 @@ router.get('/', async (req, res) => {
   }
 });
 
+
 // Get service by ID
 router.get('/id/:id', async (req, res) => {
   try {

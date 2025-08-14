@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import axios from 'axios';
+import api from '@/config/api';
+import { AxiosError } from 'axios';
 import { ServiceProps } from '@/components/ServiceCard';
 import ServiceCard from '@/components/ServiceCard';
 import { Loader2 } from 'lucide-react';
@@ -18,17 +19,17 @@ const SearchResults = () => {
     const fetchSearchResults = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('https://themabinti-main-d4az.onrender.com/api/services/search', {
+        const response = await api.get('/services/search', {
           params: { query },
         });
 
-        const formattedServices: ServiceProps[] = response.data.map((service: any) => ({
+        const formattedServices: ServiceProps[] = response.data.map((service: ServiceProps) => ({
           id: service._id,
           name: service.name,
           minPrice: service.minPrice,
           maxPrice: service.maxPrice,
           location: service.location,
-          image: service.media.find((m: any) => m.type === 'image')?.data || 'https://via.placeholder.com/300',
+          image: service.media.find((m: { type: string; data: string }) => m.type === 'image')?.data || 'https://via.placeholder.com/300',
           whatsapp: service.phoneNumber.replace(/^\+/, ''),
           category: service.category,
           subcategory: service.subcategory,
@@ -37,7 +38,7 @@ const SearchResults = () => {
 
         setServices(formattedServices);
         setLoading(false);
-      } catch (err) {
+      } catch (err: AxiosError) {
         console.error('Error fetching search results:', err);
         setError('Failed to load search results. Please try again.');
         setLoading(false);

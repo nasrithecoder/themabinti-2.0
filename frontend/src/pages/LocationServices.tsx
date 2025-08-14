@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import axios from 'axios';
+import api from '@/config/api';
+import { AxiosError } from 'axios';
 import { ServiceProps } from '@/components/ServiceCard';
 import ServiceCard from '@/components/ServiceCard';
 import { Loader2 } from 'lucide-react';
@@ -18,9 +19,7 @@ const LocationServices = () => {
     const fetchServicesByLocation = async () => {
       try {
         setLoading(true);
-        const apiUrl = 'https://themabinti-main-d4az.onrender.com/api/services';
-        console.log('Fetching from:', apiUrl, 'with location:', decodedLocation);
-        const response = await axios.get(apiUrl, {
+                const response = await api.get('/services', {
           params: { location: decodedLocation },
         });
 
@@ -29,13 +28,13 @@ const LocationServices = () => {
         // Normalize response to always be an array
         const data = Array.isArray(response.data) ? response.data : [response.data];
 
-        const formattedServices: ServiceProps[] = data.map((service: any) => ({
+        const formattedServices: ServiceProps[] = data.map((service: ServiceProps) => ({
           id: service._id,
           name: service.name,
           minPrice: service.minPrice,
           maxPrice: service.maxPrice,
           location: service.location,
-          image: service.media.find((m: any) => m.type === 'image')?.data || 'https://via.placeholder.com/300',
+          image: service.media.find((m: { type: string; data: string }) => m.type === 'image')?.data || 'https://via.placeholder.com/300',
           whatsapp: service.phoneNumber?.replace(/^\+/, '') || '',
           category: service.category,
           subcategory: service.subcategory,
@@ -44,7 +43,7 @@ const LocationServices = () => {
 
         setServices(formattedServices);
         setLoading(false);
-      } catch (err: any) {
+      } catch (err: AxiosError) {
         console.error('Error fetching services:', err);
         const errorMessage = err.response?.data?.message || 'Failed to load services. Please try again.';
         setError(errorMessage);

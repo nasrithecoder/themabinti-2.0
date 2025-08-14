@@ -15,7 +15,8 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
+import api from '@/config/api';
 import { Loader2 } from 'lucide-react';
 
 const formSchema = z.object({
@@ -65,11 +66,11 @@ const SignUpForm = () => {
 
     const checkStatus = async () => {
       try {
-        const response = await axios.get(`https://themabinti-main-d4az.onrender.com/api/auth/payment-status/${checkoutId}`);
+        const response = await api.get(`/auth/payment-status/${checkoutId}`);
         
         if (response.data.status === 'success') {
           // Complete registration
-          const completeResponse = await axios.post('https://themabinti-main-d4az.onrender.com/api/auth/complete-seller-registration', {
+          const completeResponse = await api.post('/auth/complete-seller-registration', {
             ...sellerData,
             checkoutRequestId: checkoutId,
             packageId
@@ -142,7 +143,7 @@ const SignUpForm = () => {
       console.log('Sending register request:', userData); // Debug log
 
       // Send POST request to backend
-      const response = await axios.post('https://themabinti-main-d4az.onrender.com/api/auth/register', userData);
+      const response = await api.post('/auth/register', userData);
       console.log('Registration response:', response.data); // Debug log
       if (response.data.paymentInitiated) {
         // For sellers, handle payment flow

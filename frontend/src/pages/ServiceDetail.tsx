@@ -28,11 +28,10 @@ const ServiceDetail = () => {
       try {
         setLoading(true);
         console.log('Fetching service with ID:', id);
-        const response = await api.get('api/services');
+        const response = await api.get(`/api/services/id/${id}`);
         console.log('API Response:', response.data);
         
-        // Find the specific service by ID
-        const serviceData = response.data.find((service: any) => service._id === id);
+        const serviceData = response.data;
         
         if (!serviceData) {
           throw new Error('Service not found');

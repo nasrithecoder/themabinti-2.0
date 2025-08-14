@@ -31,7 +31,8 @@ import {
   X
 } from 'lucide-react';
 import { toast } from 'sonner';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
+import api from '@/config/api';
 import { Tooltip } from '@/components/ui/tooltip';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
@@ -72,7 +73,7 @@ const AdminDashboard = () => {
   const [password, setPassword] = useState('');
   const [loginLoading, setLoginLoading] = useState(false);
 
-  const API_BASE = 'https://themabinti-main-d4az.onrender.com/api/admin';
+  
 
   // Check authentication
   useEffect(() => {
@@ -102,12 +103,12 @@ const AdminDashboard = () => {
       const headers = { Authorization: `Bearer ${token}` };
 
       const [statsRes, usersRes, servicesRes, appointmentsRes, paymentsRes, contactsRes] = await Promise.all([
-        axios.get(`${API_BASE}/dashboard/stats`, { headers }),
-        axios.get(`${API_BASE}/users?page=${usersPage}&limit=10`, { headers }),
-        axios.get(`${API_BASE}/services?page=${servicesPage}&limit=10`, { headers }),
-        axios.get(`${API_BASE}/appointments?page=${appointmentsPage}&limit=10`, { headers }),
-        axios.get(`${API_BASE}/payments?page=${paymentsPage}&limit=10`, { headers }),
-        axios.get(`${API_BASE}/contacts?page=${contactsPage}&limit=10`, { headers })
+        api.get('/admin/dashboard/stats', { headers }),
+        api.get(`/admin/users?page=${usersPage}&limit=10`, { headers }),
+        api.get(`/admin/services?page=${servicesPage}&limit=10`, { headers }),
+        api.get(`/admin/appointments?page=${appointmentsPage}&limit=10`, { headers }),
+        api.get(`/admin/payments?page=${paymentsPage}&limit=10`, { headers }),
+        api.get(`/admin/contacts?page=${contactsPage}&limit=10`, { headers })
       ]);
 
       setStats(statsRes.data);
@@ -134,7 +135,7 @@ const AdminDashboard = () => {
     setLoginLoading(true);
 
     try {
-      const response = await axios.post(`${API_BASE}/login`, { email, password });
+      const response = await api.post('/admin/login', { email, password });
       localStorage.setItem('adminToken', response.data.token);
       setIsAuthenticated(true);
       toast.success('Login successful');
@@ -157,8 +158,8 @@ const AdminDashboard = () => {
   const updateAppointmentStatus = async (appointmentId: string, status: string) => {
     try {
       const token = localStorage.getItem('adminToken');
-      await axios.patch(
-        `${API_BASE}/appointments/${appointmentId}/status`,
+      await api.patch(
+        `/admin/appointments/${appointmentId}/status`,
         { status },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -174,7 +175,7 @@ const AdminDashboard = () => {
 
     try {
       const token = localStorage.getItem('adminToken');
-      await axios.delete(`${API_BASE}/services/${serviceId}`, {
+      await api.delete(`/admin/services/${serviceId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success('Service deleted successfully');
@@ -189,7 +190,7 @@ const AdminDashboard = () => {
 
     try {
       const token = localStorage.getItem('adminToken');
-      await axios.delete(`${API_BASE}/users/${userId}`, {
+      await api.delete(`/admin/users/${userId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success('User deleted successfully');

@@ -10,6 +10,7 @@ import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { useParams } from 'react-router-dom';
 import api from '@/config/api';
+import { AxiosError } from 'axios';
 
 interface TimeSlot {
   time: string;
@@ -57,6 +58,7 @@ const BookAppointmentDialog = ({ open, onOpenChange, serviceId }: BookAppointmen
   // Enquiry form state
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [message, setMessage] = useState('');
 
   const handleTabChange = (value: string) => {
@@ -72,7 +74,7 @@ const BookAppointmentDialog = ({ open, onOpenChange, serviceId }: BookAppointmen
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!selectedDate || !selectedTime || !name || !email) {
+    if (!selectedDate || !selectedTime || !name || !email || !phone) {
       toast.error('Please fill in all required fields');
       return;
     }
@@ -84,7 +86,7 @@ const BookAppointmentDialog = ({ open, onOpenChange, serviceId }: BookAppointmen
         serviceId: actualServiceId || null,
         name,
         email,
-        phone: '', // Add phone field if needed
+        phone,
         date: selectedDate,
         time: selectedTime,
         message
@@ -99,7 +101,7 @@ const BookAppointmentDialog = ({ open, onOpenChange, serviceId }: BookAppointmen
       setEmail('');
       setMessage('');
       onOpenChange(false);
-    } catch (error: any) {
+    } catch (error: AxiosError) {
       console.error('Error booking appointment:', error);
       const errorMessage = error.response?.data?.message || 'Failed to book appointment. Please try again.';
       toast.error(errorMessage);
@@ -199,6 +201,17 @@ const BookAppointmentDialog = ({ open, onOpenChange, serviceId }: BookAppointmen
                   required
                 />
               </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone Number</Label>
+                <Input 
+                  id="phone" 
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  required
+                />
+              </div>
               
               <div className="space-y-2">
                 <Label htmlFor="message">Message</Label>
@@ -217,6 +230,15 @@ const BookAppointmentDialog = ({ open, onOpenChange, serviceId }: BookAppointmen
                 disabled={isSubmitting}
               >
                 {isSubmitting ? 'Booking...' : 'Book'}
+              </Button>
+
+              <Button 
+                type="button" 
+                variant="outline"
+                className="w-full"
+                onClick={() => setActiveTab('appointment')}
+              >
+                Back
               </Button>
             </form>
           </TabsContent>
