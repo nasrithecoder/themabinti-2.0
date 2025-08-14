@@ -89,7 +89,7 @@ const NavbarTop = () => {
   };
 
   return (
-    <div className={`sticky top-0 z-50 bg-white ${isScrolled ? 'shadow-md' : ''}`}>
+    <div className={`sticky top-0 z-50 bg-white/95 backdrop-blur-md transition-all duration-300 ${isScrolled ? 'shadow-lg border-b border-purple-100' : ''}`}>
       <div className="container mx-auto py-4">
         <div className="flex items-center justify-between">
           {/* Mobile Menu Button */}
@@ -217,7 +217,9 @@ const NavbarTop = () => {
 
           {/* Logo */}
           <Link to="/" className="flex items-center">
-            <span className="text-2xl font-bold text-purple-500">themabinti</span>
+            <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-purple-800 bg-clip-text text-transparent">
+              themabinti
+            </span>
           </Link>
 
           {/* Location Selector - Hidden on Mobile */}
@@ -271,10 +273,12 @@ const NavbarTop = () => {
             ) : (
               <>
                 <Link to="/signin">
-                  <Button variant="outline" size="sm" className="mr-2">Sign in</Button>
+                  <Button variant="outline" size="sm" className="mr-2 border-purple-200 text-purple-700 hover:bg-purple-50">
+                    Sign in
+                  </Button>
                 </Link>
                 <Link to="/signup-options">
-                  <Button className="bg-purple-500 text-white hover:bg-purple-600" size="sm">
+                  <Button className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white shadow-md hover:shadow-lg transition-all duration-300" size="sm">
                     Sign up
                   </Button>
                 </Link>

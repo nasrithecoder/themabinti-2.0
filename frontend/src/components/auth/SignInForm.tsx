@@ -42,7 +42,7 @@ const SignInForm = () => {
 
     try {
       // Send login request to backend
-      const response = await axios.post('https://themabinti-main-d4az.onrender.com/api/login', {
+      const response = await axios.post('https://themabinti-main-d4az.onrender.com/api/auth/login', {
         email: values.email,
         password: values.password,
       });

@@ -1,7 +1,25 @@
 import * as React from "react"
 import * as RechartsPrimitive from "recharts"
-
 import { cn } from "@/lib/utils"
+
+// Re-export Recharts components for easier use
+export const {
+  LineChart,
+  BarChart,
+  PieChart,
+  AreaChart,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  Line,
+  Bar,
+  Pie,
+  Area,
+  Cell
+} = RechartsPrimitive;
 
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: "", dark: ".dark" } as const

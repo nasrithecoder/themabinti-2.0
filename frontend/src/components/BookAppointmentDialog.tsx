@@ -81,9 +81,10 @@ const BookAppointmentDialog = ({ open, onOpenChange, serviceId }: BookAppointmen
     
     try {
       const response = await api.post('/api/appointments', {
-        serviceId: actualServiceId,
+        serviceId: actualServiceId || null,
         name,
         email,
+        phone: '', // Add phone field if needed
         date: selectedDate,
         time: selectedTime,
         message

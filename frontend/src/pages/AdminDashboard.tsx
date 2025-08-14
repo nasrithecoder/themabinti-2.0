@@ -328,61 +328,70 @@ const AdminDashboard = () => {
             <div className="space-y-8">
               {/* Stat Cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <Card className="flex flex-col items-center justify-center p-4">
-                  <CardHeader className="flex flex-row items-center justify-between w-full pb-2">
+                <Card className="hover:shadow-lg transition-shadow">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-                    <Users className="h-5 w-5 text-purple-500" />
+                    <Users className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
-                  <CardContent className="flex flex-col items-center">
+                  <CardContent>
                     <div className="text-2xl font-bold">{stats?.totalUsers || 0}</div>
                     <p className="text-xs text-gray-500">{stats?.totalSellers || 0} sellers</p>
                   </CardContent>
                 </Card>
-                <Card className="flex flex-col items-center justify-center p-4">
-                  <CardHeader className="flex flex-row items-center justify-between w-full pb-2">
+                
+                <Card className="hover:shadow-lg transition-shadow">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Total Services</CardTitle>
-                    <Store className="h-5 w-5 text-purple-500" />
+                    <Store className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
-                  <CardContent className="flex flex-col items-center">
+                  <CardContent>
                     <div className="text-2xl font-bold">{stats?.totalServices || 0}</div>
+                    <p className="text-xs text-gray-500">Active listings</p>
                   </CardContent>
                 </Card>
-                <Card className="flex flex-col items-center justify-center p-4">
-                  <CardHeader className="flex flex-row items-center justify-between w-full pb-2">
+                
+                <Card className="hover:shadow-lg transition-shadow">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Appointments</CardTitle>
-                    <Calendar className="h-5 w-5 text-purple-500" />
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
-                  <CardContent className="flex flex-col items-center">
+                  <CardContent>
                     <div className="text-2xl font-bold">{stats?.totalAppointments || 0}</div>
                     <p className="text-xs text-gray-500">{stats?.pendingAppointments || 0} pending</p>
                   </CardContent>
                 </Card>
-                <Card className="flex flex-col items-center justify-center p-4">
-                  <CardHeader className="flex flex-row items-center justify-between w-full pb-2">
+                
+                <Card className="hover:shadow-lg transition-shadow">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Revenue</CardTitle>
-                    <DollarSign className="h-5 w-5 text-purple-500" />
+                    <DollarSign className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
-                  <CardContent className="flex flex-col items-center">
+                  <CardContent>
                     <div className="text-2xl font-bold">Ksh {stats?.totalRevenue?.toLocaleString() || 0}</div>
                     <p className="text-xs text-gray-500">{stats?.successfulPayments || 0} successful payments</p>
                   </CardContent>
                 </Card>
               </div>
+              
               {/* Recent Activity */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card>
+                <Card className="hover:shadow-lg transition-shadow">
                   <CardHeader>
                     <CardTitle>Recent Users</CardTitle>
+                    <CardDescription>Latest user registrations</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
                       {users.slice(0, 5).map((user: any) => (
-                        <div key={user._id} className="flex items-center justify-between">
+                        <div key={user._id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                           <div>
                             <p className="font-medium">{user.userName}</p>
                             <p className="text-sm text-gray-500">{user.email}</p>
                           </div>
-                          <Badge variant={user.accountType === 'seller' ? 'default' : 'secondary'}>
+                          <Badge 
+                            variant={user.accountType === 'seller' ? 'default' : 'secondary'}
+                            className={user.accountType === 'seller' ? 'bg-purple-100 text-purple-800' : ''}
+                          >
                             {user.accountType}
                           </Badge>
                         </div>
@@ -390,19 +399,28 @@ const AdminDashboard = () => {
                     </div>
                   </CardContent>
                 </Card>
-                <Card>
+                
+                <Card className="hover:shadow-lg transition-shadow">
                   <CardHeader>
                     <CardTitle>Recent Payments</CardTitle>
+                    <CardDescription>Latest payment transactions</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
                       {payments.slice(0, 5).map((payment: any) => (
-                        <div key={payment.id} className="flex items-center justify-between">
+                        <div key={payment.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                           <div>
-                            <p className="font-medium">{payment.package_id}</p>
+                            <p className="font-medium">Ksh {parseFloat(payment.amount).toLocaleString()}</p>
                             <p className="text-sm text-gray-500">{payment.phone_number}</p>
                           </div>
-                          <Badge variant={payment.status === 'success' ? 'default' : payment.status === 'pending' ? 'secondary' : 'destructive'}>
+                          <Badge 
+                            variant={payment.status === 'success' ? 'default' : payment.status === 'pending' ? 'secondary' : 'destructive'}
+                            className={
+                              payment.status === 'success' ? 'bg-green-100 text-green-800' :
+                              payment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                              'bg-red-100 text-red-800'
+                            }
+                          >
                             {payment.status}
                           </Badge>
                         </div>
@@ -414,9 +432,10 @@ const AdminDashboard = () => {
             </div>
           )}
           {activeTab === 'users' && (
-            <Card>
+            <Card className="shadow-lg">
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Users Management</CardTitle>
+                <CardDescription>Manage all platform users</CardDescription>
                 <div className="flex gap-2">
                   <Input placeholder="Search users..." className="w-48" />
                   {/* Pagination controls can go here */}
@@ -480,9 +499,10 @@ const AdminDashboard = () => {
             </Card>
           )}
           {activeTab === 'services' && (
-            <Card>
+            <Card className="shadow-lg">
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Services Management</CardTitle>
+                <CardDescription>Monitor all services on the platform</CardDescription>
                 <div className="flex gap-2">
                   <Input placeholder="Search services..." className="w-48" />
                   {/* Pagination controls can go here */}
@@ -536,9 +556,10 @@ const AdminDashboard = () => {
             </Card>
           )}
           {activeTab === 'appointments' && (
-            <Card>
+            <Card className="shadow-lg">
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Appointments Management</CardTitle>
+                <CardDescription>Track and manage all appointments</CardDescription>
                 <div className="flex gap-2">
                   <Input placeholder="Search appointments..." className="w-48" />
                   {/* Pagination controls can go here */}
@@ -618,7 +639,7 @@ const AdminDashboard = () => {
             </Card>
           )}
           {activeTab === 'payments' && (
-            <Card className="mb-8">
+            <Card className="shadow-lg">
               <CardHeader>
                 <CardTitle>Payments Management</CardTitle>
                 <CardDescription>View and manage all payments</CardDescription>
@@ -667,9 +688,10 @@ const AdminDashboard = () => {
             </Card>
           )}
           {activeTab === 'contacts' && (
-            <Card>
+            <Card className="shadow-lg">
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Contact Messages</CardTitle>
+                <CardDescription>Customer inquiries and feedback</CardDescription>
                 <div className="flex gap-2">
                   <Input placeholder="Search contacts..." className="w-48" />
                   {/* Pagination controls can go here */}

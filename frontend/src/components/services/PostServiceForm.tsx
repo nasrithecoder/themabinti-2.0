@@ -204,7 +204,6 @@ const PostServiceForm = () => {
 
       const response = await axios.post('https://themabinti-main-d4az.onrender.com/api/services', payload, {
         headers: {
-          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       });
